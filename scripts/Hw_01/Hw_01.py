@@ -56,6 +56,7 @@ def plot_data():
         y="class",
         x="petal_width",
         box=True,
+        color="class",
         points="all",
         height=800,
         width=1000,
