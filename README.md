@@ -1,4 +1,4 @@
-# PythonProject
+pip-compile --output-file=requirements.txt requirements.i# PythonProject
 
 # Setup for developement:
 
