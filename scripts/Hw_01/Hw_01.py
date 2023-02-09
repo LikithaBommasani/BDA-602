@@ -49,7 +49,7 @@ def plot_data():
         title="3-D_Scatter_plot",
     )
     scatter_plot.show()
-
+    scatter_plot.write_html(file="Plots.html", include_plotlyjs="cdn")
     # 2. creating Violin Plot
     violin_plot: Figure = px.violin(
         iris_data,
@@ -62,17 +62,17 @@ def plot_data():
         title="Violin Plot",
     )
     violin_plot.show()
-
+    violin_plot.write_html(file="Plots.html", include_plotlyjs="cdn")
     # 3. Creating Box Plot
     box_plot: Figure = px.box(iris_data, color="class", points="all", title="Box Plot")
     box_plot.show()
-
+    box_plot.write_html(file="Plots.html", include_plotlyjs="cdn")
     # 4. Creating Histogram
     his_plot: Figure = px.histogram(
         iris_data, x="sepal_length", color="class", title="Histogram"
     )
     his_plot.show()
-
+    his_plot.write_html(file="Plots.html", include_plotlyjs="cdn")
     # 5. Scatter plot Matrix
     matrix_plot: Figure = px.scatter_matrix(
         iris_data,
@@ -80,6 +80,7 @@ def plot_data():
         color="class",
     )
     matrix_plot.show()
+    matrix_plot.write_html(file="Plots.html", include_plotlyjs="cdn")
 
     # Analyzing  and building models
 
