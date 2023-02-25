@@ -41,7 +41,7 @@ CREATE OR REPLACE TABLE batter_avg_rolling AS
 SELECT bart1.batter
     , (CASE WHEN SUM(bart2.atBat) > 0 THEN SUM(bart2.Hit) / SUM(bart2.atBat) ELSE 0 END) AS Batting_Avg
     , bart1.game_id
-    , bart1.local_date
+    , DATE(bart1.local_date) AS local_date
     , DATE_SUB(bart1.local_date, INTERVAL 100 DAY) AS Date_since
 FROM batter_avg_rolling_temp bart1
     INNER JOIN batter_avg_rolling_temp bart2 ON bart1.Batter = bart2.Batter
@@ -49,7 +49,7 @@ FROM batter_avg_rolling_temp bart1
         AND bart2.local_date > DATE_SUB(bart1.local_date, INTERVAL 100 DAY)
 -- Where clause could be removed  for all players
 WHERE bart1.batter = 435623
-GROUP BY bart1.Batter, bart1.local_date
+GROUP BY bart1.Batter, DATE(bart1.local_date)
 ORDER BY bart1.Batter
 ;
 
