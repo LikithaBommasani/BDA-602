@@ -10,8 +10,9 @@ def main():
     db_host = "localhost"
     db_database = "baseball"
     # pragma: allowlist secret
-    connect_string = f"mariadb+mariadbconnector://{db_user}:{db_pass}@{db_host}/{db_database}"
-
+    connect_string = (
+        f"mariadb+mariadbconnector://{db_user}:{db_pass}@{db_host}/{db_database}"
+    )
 
     sql_engine = sqlalchemy.create_engine(connect_string)
 
