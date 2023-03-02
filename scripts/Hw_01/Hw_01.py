@@ -53,7 +53,7 @@ def plot_data():
         title="Scatter_plot",
     )
     scatter_plot.show()
-    scatter_plot.write_html(file="Basic_plots.html", include_plotlyjs="cdn")
+    scatter_plot.write_html(file="scatter_plot.html", include_plotlyjs="cdn")
     # 2. creating Violin Plot
     violin_plot: Figure = px.violin(
         iris_data,
@@ -67,17 +67,17 @@ def plot_data():
         title="Violin Plot",
     )
     violin_plot.show()
-    violin_plot.write_html(file="Basic_plots.html", include_plotlyjs="cdn")
+    violin_plot.write_html(file="violin_plot.html", include_plotlyjs="cdn")
     # 3. Creating Box Plot
     box_plot: Figure = px.box(iris_data, color="class", points="all", title="Box Plot")
     box_plot.show()
-    box_plot.write_html(file="Basic_plots.html", include_plotlyjs="cdn")
+    box_plot.write_html(file="box_plot.html", include_plotlyjs="cdn")
     # 4. Creating Histogram
     his_plot: Figure = px.histogram(
         iris_data, x="sepal_length", color="class", title="Histogram"
     )
     his_plot.show()
-    his_plot.write_html(file="Basic_plots.html", include_plotlyjs="cdn")
+    his_plot.write_html(file="his_plot.html", include_plotlyjs="cdn")
     # 5. Scatter plot Matrix
     matrix_plot: Figure = px.scatter_matrix(
         iris_data,
@@ -85,7 +85,7 @@ def plot_data():
         color="class",
     )
     matrix_plot.show()
-    matrix_plot.write_html(file="Basic_plots.html", include_plotlyjs="cdn")
+    matrix_plot.write_html(file="matrix_plot.html", include_plotlyjs="cdn")
 
     # Analyzing  and building models
 
@@ -187,7 +187,7 @@ def plot_histogram_and_response_rate(data, predictor, species, response_col="cla
         yaxis=dict(
             title=dict(text="Count"),
             side="left",
-            range=[0, 30],
+            range=[0, 45],
         ),
         yaxis2=dict(
             title=dict(text="Response"),
@@ -201,7 +201,7 @@ def plot_histogram_and_response_rate(data, predictor, species, response_col="cla
     figure.update_xaxes(title_text=f"{predictor}")
 
     figure.show()
-    figure.write_html(file="Mean_Response_plots.html", include_plotlyjs="cdn")
+    figure.write_html(file=f"{predictor}_mean_resp.html", include_plotlyjs="cdn")
 
 
 def plot_all_species(iris_data, predictors, response="class"):
