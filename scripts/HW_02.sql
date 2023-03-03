@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS batter_avg_historical AS
+CREATE OR REPLACE TEMPORARY TABLE batter_avg_historical AS
 SELECT batter AS Batter
     , SUM(hit) AS Hit
     , SUM(atBat) AS atBat
@@ -14,7 +14,7 @@ GROUP BY Batter
 
 
 
-CREATE TABLE IF NOT EXISTS batter_avg_annual AS
+CREATE OR REPLACE TEMPORARY TABLE batter_avg_annual AS
 SELECT batter AS Batter
     , YEAR(game.local_date) AS For_Year
     , (CASE WHEN SUM(bc.atBat) > 0 THEN SUM(bc.Hit) / SUM(bc.atBat) ELSE 0 END) AS Batting_Avg
