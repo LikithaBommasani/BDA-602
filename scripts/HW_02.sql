@@ -7,8 +7,8 @@ FROM batter_counts
 GROUP BY Batter
 ;
 
-SELECT  Batter, Hit, atBat, Batting_Avg FROM batter_avg_historical;
-SELECT COUNT(*) FROM batter_avg_historical;
+-- SELECT  Batter, Hit, atBat, Batting_Avg FROM batter_avg_historical;
+-- SELECT COUNT(*) FROM batter_avg_historical;
 
 
 
@@ -23,8 +23,8 @@ FROM batter_counts AS bc
 GROUP BY Batter, For_Year
 ORDER BY Batter, For_Year
 ;
-SELECT Batter, For_Year, Batting_Avg FROM batter_avg_annual;
-SELECT COUNT(*) FROM batter_avg_annual;
+-- SELECT Batter, For_Year, Batting_Avg FROM batter_avg_annual;
+-- SELECT COUNT(*) FROM batter_avg_annual;
 
 
 
@@ -48,11 +48,11 @@ FROM batter_avg_rolling_temp bart1
         AND bart2.local_date < bart1.local_date
         AND bart2.local_date > DATE_SUB(bart1.local_date, INTERVAL 100 DAY)
 -- Where clause could be removed  for all players
-WHERE bart1.batter = 435623
+-- WHERE bart1.batter = 435623
 GROUP BY bart1.Batter, DATE(bart1.local_date)
 ORDER BY bart1.Batter
 ;
 
 
-SELECT batter, Batting_Avg, game_id, local_date, Date_since FROM batter_avg_rolling;
-SELECT COUNT(*) FROM batter_avg_rolling;
+-- SELECT batter, Batting_Avg, game_id, local_date, Date_since FROM batter_avg_rolling;
+-- SELECT COUNT(*) FROM batter_avg_rolling;
