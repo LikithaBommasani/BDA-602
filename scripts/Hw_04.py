@@ -1,6 +1,7 @@
 import random
 from typing import List, Tuple
 
+import numpy as np
 import pandas
 import plotly.graph_objs as go
 import seaborn
@@ -223,6 +224,139 @@ def LogisticRegression(dataset, response, pred):
         # fig.show()
 
 
+def table_unweighted(dataset, feature, response):
+    feature = dataset[feature]
+    response = dataset[response]
+    # print(feature)
+    feature = feature.iloc[:, 0]
+    # Reference: https://stackoverflow.com/questions/36814100/pandas-to-numeric-for-multiple-columns
+    feature = pandas.Series(feature).apply(
+        pandas.to_numeric, errors="coerce"
+    )  # Convert to numeric
+    feature = feature[~np.isnan(feature)]  # Remove NaN values
+
+    response = pandas.Series(response).apply(pandas.to_numeric, errors="coerce")
+    # print(response)
+    response = response[~np.isnan(response)]
+    bins = 10
+    bin_edges = np.linspace(feature.min(), feature.max(), bins + 1)
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    bin_counts, _ = np.histogram(feature, bins=bin_edges)
+    bin_means = [
+        response[(feature >= bin_edges[i]) & (feature < bin_edges[i + 1])].mean()
+        for i in range(bins)
+    ]
+    bin_means = pandas.Series(bin_means).fillna(0).tolist()  # Replace NaN with 0
+    pop_mean = response.mean()
+    bin_diffs = [(bin_mean - pop_mean) ** 2 for bin_mean in bin_means]
+
+    table = pandas.DataFrame(
+        {
+            "LowerBin": bin_edges[:-1],
+            "UpperBin": bin_edges[1:],
+            "BinCenter": bin_centers,
+            "BinCount": bin_counts,
+            "BinMean": bin_means,
+            "PopulationMean": pop_mean,
+            "MeanSquareDiff": bin_diffs,
+        }
+    )
+
+    table = table.sort_values("MeanSquareDiff", ascending=False)
+
+    return table
+
+
+def weighted_table(table_unweighted, feature):
+    pop_mean = table_unweighted["PopulationMean"].iloc[0]
+    pop_prop = table_unweighted["BinCount"] / len(feature)
+    bin_means = table_unweighted["BinMean"]
+    w_msd = pop_prop * (bin_means - pop_mean) ** 2
+    weighted_table = table_unweighted.assign(
+        PopulationProportion=pop_prop, MeanSquaredDiff_Weighted=w_msd
+    )
+    weighted_table = weighted_table.sort_values(
+        "MeanSquaredDiff_Weighted", ascending=False
+    )
+
+    return weighted_table
+
+
+# def plot_histogram_and_response_rate(data, predictor, s, response_col="survived"):
+#     predictor_data = data[[predictor, response_col]]
+#
+#     total_count = np.array(predictor_data[predictor])
+#     hist_count, bins = np.histogram(
+#         total_count,
+#         bins=10,
+#         range=(np.min(total_count), np.max(total_count)),
+#     )
+#     modified_bins = 0.5 * (bins[:-1] + bins[1:])
+#
+#     s_predictor = predictor_data.loc[predictor_data[response_col] == s]
+#     s_population = np.array(s_predictor[predictor])
+#     hist_s_population, _ = np.histogram(s_population, bins=bins)
+#
+#     response_count = np.zeros(len(hist_count))
+#     for i in range(len(hist_count)):
+#         if hist_count[i] != 0:
+#             response_count[i] = hist_s_population[i] / hist_count[i]
+#
+#     s_response_rate = len(data.loc[data[response_col] == s]) / len(data)
+#     s_response_arr = np.array([s_response_rate] * len(modified_bins))
+#
+#     figure = go.Figure(
+#         data=go.Bar(
+#             x=modified_bins,
+#             y=hist_count,
+#             name=f"{predictor}",
+#             marker=dict(color="blue"),
+#         )
+#     )
+#
+#     figure.add_trace(
+#         go.Scatter(
+#             x=modified_bins,
+#             y=response_count,
+#             yaxis="y2",
+#             name="Response",
+#             marker=dict(color="red"),
+#             connectgaps=True,
+#         )
+#     )
+#
+#     figure.add_trace(
+#         go.Scatter(
+#             x=modified_bins,
+#             y=s_response_arr,
+#             yaxis="y2",
+#             mode="lines",
+#             name=f"{s}",
+#         )
+#     )
+#
+#     figure.update_layout(
+#         title_text=f"<b> Mean of Response plot for {s} vs {predictor}</b>",
+#         legend=dict(orientation="v"),
+#         yaxis=dict(
+#             title=dict(text="Count"),
+#             side="left",
+#             range=[0, 700],
+#         ),
+#         yaxis2=dict(
+#             title=dict(text="Response"),
+#             side="right",
+#             range=[-0.1, 1.2],
+#             overlaying="y",
+#             tickmode="auto",
+#         ),
+#     )
+#
+#     figure.update_xaxes(title_text=f"{predictor}")
+#
+#     figure.show()
+
+
 def Random_Forest_Variable_importance(dataset, response, pred):
     # Reference1 : https://towardsdatascience.com/random-forest-in-python-24d0893d51c0
     # Reference2 : https: // sparkbyexamples.com / python / sort - python - dictionary /
@@ -261,7 +395,7 @@ def Random_Forest_Variable_importance(dataset, response, pred):
         xaxis_title="Variable",
         yaxis_title="Importance Score",
     )
-    fig.show()
+    # fig.show()
     return sorted_imp_list, var_importance_df
 
 
@@ -301,3 +435,8 @@ if __name__ == "__main__":
         LogisticRegression(df, R_Response, cont_pred)
 
     Random_Forest_Variable_importance(df, R_Response, cont_pred)
+    unweighted = table_unweighted(df, P_Predictors, R_Response)
+    print(unweighted)
+    weighted = weighted_table(unweighted, P_Predictors)
+    print(weighted)
+    # plot_histogram_and_response_rate(df,'fare',1)
