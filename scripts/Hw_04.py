@@ -116,6 +116,7 @@ def cont_resp_cat_predictor(df, pred, R_Response):
         violinmode="group",
     )
     # fig.show()
+    fig.write_html(file=f"{pred} vs {R_Response} plot.html", include_plotlyjs="cdn")
 
 
 def cont_response_cont_predictor(df, pred, R_Response):
@@ -126,6 +127,9 @@ def cont_response_cont_predictor(df, pred, R_Response):
         yaxis_title=f"Response - {R_Response}",
     )
     # fig.show()
+    fig.write_html(
+        file=f"{pred} vs {R_Response} plot.html", include_plotlyjs="cdn"
+    )  # From HW_01
 
 
 def cat_resp_cont_predictor(df, pred, R_Response):
@@ -141,6 +145,7 @@ def cat_resp_cont_predictor(df, pred, R_Response):
         yaxis_title=f"Response- {R_Response}",
     )
     # fig.show()
+    fig.write_html(file=f"{pred} vs {R_Response} plot.html", include_plotlyjs="cdn")
 
 
 def cat_response_cat_predictor(df, pred, R_Response):
@@ -150,6 +155,7 @@ def cat_response_cat_predictor(df, pred, R_Response):
     fig.update_xaxes(title=pred)
     fig.update_yaxes(title=R_Response)  # Reference : https://plotly.com/python/axes/
     # fig.show()
+    fig.write_html(file=f"{pred} vs {R_Response} plot.html", include_plotlyjs="cdn")
 
 
 def check_cat_cont_resposne(
@@ -195,6 +201,9 @@ def LinearRegression(dataset, response, pred):
             yaxis_title=f"Variable:{response}",
         )
         # fig.show()
+        fig.write_html(
+            file=f"{feature_name} vs {response} plot.html", include_plotlyjs="cdn"
+        )
 
 
 def LogisticRegression(dataset, response, pred):
@@ -222,6 +231,9 @@ def LogisticRegression(dataset, response, pred):
             yaxis_title=f"Variable:{response}",
         )
         # fig.show()
+        fig.write_html(
+            file=f"{feature_name} vs {response} plot.html", include_plotlyjs="cdn"
+        )
 
 
 def table_unweighted(dataset, feature, response):
@@ -396,6 +408,7 @@ def Random_Forest_Variable_importance(dataset, response, pred):
         yaxis_title="Importance Score",
     )
     # fig.show()
+    fig.write_html(file=f"{pred} vs {response} plot.html", include_plotlyjs="cdn")
     return sorted_imp_list, var_importance_df
 
 
