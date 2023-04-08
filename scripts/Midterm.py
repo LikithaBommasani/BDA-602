@@ -138,6 +138,7 @@ def cat_cat_correlation(X, cat):
             Correlation_ratio.append(round(cat_correlation(X[cat[i]], X[cat[j]]), 5))
 
     # Create a dataframe with the categorical variable pairs and their correlation ratios
+    # Reference : https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html
     df = pd.DataFrame(
         {
             "Variable 1": variable_1,
@@ -146,7 +147,9 @@ def cat_cat_correlation(X, cat):
         }
     )
 
+
     # Pivot the dataframe to create a correlation matrix
+    # Reference: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.pivot.html
     correlation_matrix = df.pivot(
         index="Variable 1", columns="Variable 2", values="Correlation Ratio"
     )

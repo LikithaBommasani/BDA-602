@@ -125,6 +125,7 @@ def plot_categorical_predictor_and_continuous_response(df, predictors, response)
         p_response = []
 
         modified_bins = categories
+        # Reference : https://stackoverflow.com/questions/72563395/summing-a-numpy-array-based-on-a-multi-labeled-mask
         for i, category in enumerate(categories):
             mask = predictor_data == category
             count = np.sum(mask)
@@ -205,10 +206,12 @@ def plot_continuous_predictor_and_continuous_response(df, predictor, response):
     s_response_arr = []
     p_response = []
 
+    # Reference: https: // numpy.org / doc / stable / reference / generated / numpy.histogram.html
     hist, bins = np.histogram(
         predictor_data, bins=10, range=(np.min(predictor_data), np.max(predictor_data))
     )
 
+    # Reference : https://stackoverflow.com/questions/72563395/summing-a-numpy-array-based-on-a-multi-labeled-mask
     for i in range(len(bins) - 1):
         mask = (predictor_data >= bins[i]) & (predictor_data < bins[i + 1])
         count = np.sum(mask)
