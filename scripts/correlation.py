@@ -26,7 +26,8 @@ def cat_correlation(x, y, bias_correction=True, tschuprow=True):
         to ignore yates correction factor on 2x2
     3.) Haven't validated Tschuprow
 
-    Bias correction and formula's taken from : https://www.researchgate.net/publication/270277061_A_bias-correction_for_Cramer's_V_and_Tschuprow's_T
+    Bias correction and formula's taken from :
+     https://www.researchgate.net/publication/270277061_A_bias-correction_for_Cramer's_V_and_Tschuprow's_T
 
     Wikipedia for Cramer's V: https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V
     Wikipedia for Tschuprow' T: https://en.wikipedia.org/wiki/Tschuprow%27s_T

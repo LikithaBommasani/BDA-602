@@ -32,7 +32,7 @@ class Load_Test_Datasets:
         return self.all_data_sets
 
     def Fetch_sample_datasets(
-            self, dataset_name: str = None
+        self, dataset_name: str = None
     ) -> Tuple[pandas.DataFrame, List[str], str]:
 
         if dataset_name is None:
@@ -102,4 +102,3 @@ if __name__ == "__main__":
         df, P_Predictors, R_Response = test_datasets.Fetch_sample_datasets(
             dataset_name="test"
         )
-

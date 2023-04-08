@@ -11,7 +11,6 @@ from plotly import figure_factory as ff
 from sklearn import datasets
 from sklearn.ensemble import RandomForestRegressor
 
-
 # load data code, plots code and linearregression code is taken from the lecture slides
 # Load data : https://teaching.mrsharky.com/sdsu_fall_2020_lecture02.html#/13/4
 # Plots: https://teaching.mrsharky.com/sdsu_fall_2020_lecture07.html#/4/2
@@ -44,7 +43,7 @@ class Load_Test_Datasets:
         return self.all_data_sets
 
     def Fetch_sample_datasets(
-            self, dataset_name: str = None
+        self, dataset_name: str = None
     ) -> Tuple[pandas.DataFrame, List[str], str]:
 
         if dataset_name is None:
@@ -150,7 +149,9 @@ def cat_resp_cont_predictor(df, pred, R_Response, Y):
             yaxis_title=f"Response- {R_Response}",
         )
     else:
-        print(f"No data for {R_Response} {group_labels[0]} or {R_Response} {group_labels[1]}")
+        print(
+            f"No data for {R_Response} {group_labels[0]} or {R_Response} {group_labels[1]}"
+        )
     # fig_1.show()
     fig = go.Figure()
     for curr_hist, curr_group in zip(hist_data, group_labels):
@@ -181,9 +182,7 @@ def cat_response_cat_predictor(df, pred, R_Response):
     # fig.write_html(file=f"{pred} vs {R_Response} plot.html", include_plotlyjs="cdn")
 
 
-def check_cat_cont_resposne(
-        df, R_Response
-):
+def check_cat_cont_resposne(df, R_Response):
     unique_vals = df[R_Response].nunique()
     if unique_vals == 2:
         return "Cat"
@@ -258,77 +257,74 @@ def LogisticRegression(dataset, response, pred):
         # fig.write_html(
         #  file=f"{feature_name} vs {response} plot.html", include_plotlyjs="cdn"
     # )
+    return t_value, p_value
 
 
-def table_unweighted(dataset, feature, response):
-    feature = dataset[feature]
-    response = dataset[response]
-    # print(feature)
-    feature = feature.iloc[:, 0]
-    # Reference: https://stackoverflow.com/questions/36814100/pandas-to-numeric-for-multiple-columns
-    feature = pandas.Series(feature).apply(
-        pandas.to_numeric, errors="coerce"
-    )  # Convert to numeric
-    feature = feature[~np.isnan(feature)]  # Remove NaN values
-
-    response = pandas.Series(response).apply(pandas.to_numeric, errors="coerce")
-    # print(response)
-    response = response[~np.isnan(response)]
-    bins = 10
-    bin_edges = np.linspace(feature.min(), feature.max(), bins + 1)
-    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-    bin_counts, _ = np.histogram(feature, bins=bin_edges)
-    bin_means = [
-        response[(feature >= bin_edges[i]) & (feature < bin_edges[i + 1])].mean()
-        for i in range(bins)
-    ]
-    bin_means = pandas.Series(bin_means).fillna(0).tolist()  # Replace NaN with 0
-    pop_mean = response.mean()
-    bin_diffs = [(bin_mean - pop_mean) ** 2 for bin_mean in bin_means]
-
-    table = pandas.DataFrame(
-        {
-            "LowerBin": bin_edges[:-1],
-            "UpperBin": bin_edges[1:],
-            "BinCenter": bin_centers,
-            "BinCount": bin_counts,
-            "BinMean": bin_means,
-            "PopulationMean": pop_mean,
-            "MeanSquareDiff": bin_diffs,
-        }
-    )
-
-    table = table.sort_values("MeanSquareDiff", ascending=False)
-
-    return table
-
-
-def weighted_table(table_unweighted, feature):
-    pop_mean = table_unweighted["PopulationMean"].iloc[0]
-    pop_prop = table_unweighted["BinCount"] / len(feature)
-    bin_means = table_unweighted["BinMean"]
-    w_msd = pop_prop * (bin_means - pop_mean) ** 2
-    weighted_table = table_unweighted.assign(
-        PopulationProportion=pop_prop, MeanSquaredDiff_Weighted=w_msd
-    )
-    weighted_table = weighted_table.sort_values(
-        "MeanSquaredDiff_Weighted", ascending=False
-    )
-
-    return weighted_table
+# def table_unweighted(dataset, feature, response):
+#     feature = dataset[feature]
+#     response = dataset[response]
+#     # print(feature)
+#     feature = feature.iloc[:, 0]
+#     # Reference: https://stackoverflow.com/questions/36814100/pandas-to-numeric-for-multiple-columns
+#     feature = pandas.Series(feature).apply(
+#         pandas.to_numeric, errors="coerce"
+#     )  # Convert to numeric
+#     feature = feature[~np.isnan(feature)]  # Remove NaN values
+#
+#     response = pandas.Series(response).apply(pandas.to_numeric, errors="coerce")
+#     # print(response)
+#     response = response[~np.isnan(response)]
+#     bins = 10
+#     bin_edges = np.linspace(feature.min(), feature.max(), bins + 1)
+#     bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+#     bin_counts, _ = np.histogram(feature, bins=bin_edges)
+#     bin_means = [
+#         response[(feature >= bin_edges[i]) & (feature < bin_edges[i + 1])].mean()
+#         for i in range(bins)
+#     ]
+#     bin_means = pandas.Series(bin_means).fillna(0).tolist()  # Replace NaN with 0
+#     pop_mean = response.mean()
+#     bin_diffs = [(bin_mean - pop_mean) ** 2 for bin_mean in bin_means]
+#
+#     table = pandas.DataFrame(
+#         {
+#             "LowerBin": bin_edges[:-1],
+#             "UpperBin": bin_edges[1:],
+#             "BinCenter": bin_centers,
+#             "BinCount": bin_counts,
+#             "BinMean": bin_means,
+#             "PopulationMean": pop_mean,
+#             "MeanSquareDiff": bin_diffs,
+#         }
+#     )
+#
+#     table = table.sort_values("MeanSquareDiff", ascending=False)
+#
+#     return table
 
 
-def plot_histogram_and_response_rate(df, predictors, response):
+# def weighted_table(table_unweighted, feature):
+#     pop_mean = table_unweighted["PopulationMean"].iloc[0]
+#     pop_prop = table_unweighted["BinCount"] / len(feature)
+#     bin_means = table_unweighted["BinMean"]
+#     w_msd = pop_prop * (bin_means - pop_mean) ** 2
+#     weighted_table = table_unweighted.assign(
+#         PopulationProportion=pop_prop, MeanSquaredDiff_Weighted=w_msd
+#     )
+#     weighted_table = weighted_table.sort_values(
+#         "MeanSquaredDiff_Weighted", ascending=False
+#     )
+#
+#     return weighted_table
+
+
+def plot_continuous_predictor_and_categorical_response(df, predictors, response):
     """
     Cont Pred and Cat Response
-    :param df:
-    :param predictors:
-    :param response:
-    :return:
     """
     continuous_predictors = []
     for predictor in predictors:
-        if df[predictor].dtype == 'float64' or df[predictor].dtype == 'int64':
+        if df[predictor].dtype == "float64" or df[predictor].dtype == "int64":
             continuous_predictors.append(predictor)
     if not continuous_predictors:
         print("No continuous predictors found.")
@@ -344,7 +340,7 @@ def plot_histogram_and_response_rate(df, predictors, response):
     )
     modified_bins = 0.5 * (bins[:-1] + bins[1:])
 
-    s_predictor = df.query(f'{response} == 1')
+    s_predictor = df.query(f"{response} == 1")
     s_population = np.array(s_predictor[predictor])
     hist_s_population, _ = np.histogram(s_population, bins=bins)
     p_response = np.zeros_like(hist_count, dtype=float)
@@ -390,11 +386,7 @@ def plot_histogram_and_response_rate(df, predictors, response):
     figure.update_layout(
         title_text=f"<b> Mean of Response plot for {response} vs {predictor}</b>",
         legend=dict(orientation="v"),
-        yaxis=dict(
-            title=dict(text="Response"),
-            side="left"
-
-        ),
+        yaxis=dict(title=dict(text="Response"), side="left"),
         yaxis2=dict(
             title=dict(text="Population"),
             side="right",
@@ -412,14 +404,14 @@ def plot_histogram_and_response_rate(df, predictors, response):
 
 def plot_categorical_predictor_and_continuous_response(df, predictors, response):
     """
-    Create a plot of categorical predictor variables and a continuous response variable.
-.
+        Create a plot of categorical predictor variables and a continuous response variable.
+    .
     """
 
     categorical_predictors = []
 
     for predictor in predictors:
-        if df[predictor].dtype == 'object' or df[predictor].dtype == 'bool':
+        if df[predictor].dtype == "object" or df[predictor].dtype == "bool":
             categorical_predictors.append(predictor)
     if not categorical_predictors:
         print("No categorical predictors found.")
@@ -428,7 +420,7 @@ def plot_categorical_predictor_and_continuous_response(df, predictors, response)
     for predictor in categorical_predictors:
         predictor_data = df[predictor].dropna()
         categories = predictor_data.unique()
-        categorical_predictors_count = len(categories)
+        _ = len(categories)
 
         # Calculate the population count and mean of the response variable for each category.
         hist_count = []
@@ -483,10 +475,7 @@ def plot_categorical_predictor_and_continuous_response(df, predictors, response)
         figure.update_layout(
             title_text=f"<b>Mean of Response plot for {response} vs {', '.join(categorical_predictors)}</b>",
             legend=dict(orientation="v"),
-            yaxis=dict(
-                title=dict(text="Response"),
-                side="left"
-            ),
+            yaxis=dict(title=dict(text="Response"), side="left"),
             yaxis2=dict(
                 title=dict(text="Population"),
                 side="right",
@@ -505,13 +494,15 @@ def plot_continuous_predictor_and_continuous_response(df, predictor, response):
 
     """
     predictor_data = np.array(df[predictor].astype(float).dropna().values)
-    response_data = np.array(df[response].astype(float).dropna().values)
+    _ = np.array(df[response].astype(float).dropna().values)
 
     hist_count = []
     s_response_arr = []
     p_response = []
 
-    hist, bins = np.histogram(predictor_data, bins=10, range=(np.min(predictor_data), np.max(predictor_data)))
+    hist, bins = np.histogram(
+        predictor_data, bins=10, range=(np.min(predictor_data), np.max(predictor_data))
+    )
 
     for i in range(len(bins) - 1):
         mask = (predictor_data >= bins[i]) & (predictor_data < bins[i + 1])
@@ -562,15 +553,10 @@ def plot_continuous_predictor_and_continuous_response(df, predictor, response):
     figure.update_layout(
         title_text=f"<b> Mean of Response plot for {response} vs {predictor}</b>",
         legend=dict(orientation="v"),
-        yaxis=dict(
-            title=dict(text="Response"),
-            side="left"
-
-        ),
+        yaxis=dict(title=dict(text="Response"), side="left"),
         yaxis2=dict(
             title=dict(text="Population"),
             side="right",
-
             overlaying="y",
             tickmode="auto",
         ),
@@ -582,13 +568,13 @@ def plot_continuous_predictor_and_continuous_response(df, predictor, response):
     return
 
 
-def plot_categorical_histogram_and_response_rate(df, predictors, response):
+def plot_categorical_predictor_and_categorical_response(df, predictors, response):
     """
     Categorical Pred and Categorical Response
     """
     categorical_predictors = []
     for predictor in predictors:
-        if df[predictor].dtype == 'object' or 'bool':
+        if df[predictor].dtype == "object" or "bool":
             categorical_predictors.append(predictor)
     if not categorical_predictors:
         print("No categorical predictors found.")
@@ -607,8 +593,8 @@ def plot_categorical_histogram_and_response_rate(df, predictors, response):
 
         modified_bins = categories
 
-        s_predictor = df.query(f'{response} == 1')
-        s_population = s_predictor[predictor].dropna()
+        s_predictor = df.query(f"{response} == 1")
+        s_population = s_predictor[predictor].fillna(0)
         hist_s_population = np.zeros(len(categories))
         for i, category in enumerate(categories):
             hist_s_population[i] = np.sum(s_population == category)
@@ -655,10 +641,7 @@ def plot_categorical_histogram_and_response_rate(df, predictors, response):
     figure.update_layout(
         title_text=f"<b>Mean of Response plot for {response} vs {', '.join(categorical_predictors)}</b>",
         legend=dict(orientation="v"),
-        yaxis=dict(
-            title=dict(text="Response"),
-            side="left"
-        ),
+        yaxis=dict(title=dict(text="Response"), side="left"),
         yaxis2=dict(
             title=dict(text="Population"),
             side="right",
@@ -713,6 +696,7 @@ def Random_Forest_Variable_importance(dataset, response, pred):
     )
     # fig.show()
     # fig.write_html(file=f"{pred} vs {response} plot.html", include_plotlyjs="cdn")
+
     return sorted_imp_list, var_importance_df
 
 
@@ -722,8 +706,6 @@ if __name__ == "__main__":
         df, P_Predictors, R_Response = test_datasets.Fetch_sample_datasets(
             dataset_name="titanic"
         )
-    # Comment this line for other datasets
-    # df["survived"] = df["survived"].astype("object")
     print(df.dtypes)
     response_type = check_cat_cont_resposne(df, R_Response)
     cat_pred, cont_pred = check_predictor(df, P_Predictors)
@@ -743,8 +725,6 @@ if __name__ == "__main__":
         if response_type == "Cat":
 
             cat_resp_cont_predictor(df, pred, R_Response, y)
-            # pass
-
 
         else:
 
@@ -756,20 +736,26 @@ if __name__ == "__main__":
         LogisticRegression(df, R_Response, cont_pred)
 
     Random_Forest_Variable_importance(df, R_Response, cont_pred)
-    unweighted = table_unweighted(df, P_Predictors, R_Response)
-    print(unweighted)
-    weighted = weighted_table(unweighted, P_Predictors)
-    print(weighted)
-    print(cont_pred)
+    # unweighted = table_unweighted(df, P_Predictors, R_Response)
+    # print(unweighted)
+    # weighted = weighted_table(unweighted, P_Predictors)
+    # print(weighted)
+    # print(cont_pred)
 
     for predictor in cont_pred:
         if response_type == "Cont":
             plot_continuous_predictor_and_continuous_response(df, predictor, R_Response)
         else:
-            plot_histogram_and_response_rate(df, [predictor], R_Response)
+            plot_continuous_predictor_and_categorical_response(
+                df, [predictor], R_Response
+            )
 
     for predictor in cat_pred:
         if response_type == "Cat":
-            plot_categorical_histogram_and_response_rate(df, [predictor], R_Response)
+            plot_categorical_predictor_and_categorical_response(
+                df, [predictor], R_Response
+            )
         else:
-            plot_categorical_predictor_and_continuous_response(df, [predictor], R_Response)
+            plot_categorical_predictor_and_continuous_response(
+                df, [predictor], R_Response
+            )
