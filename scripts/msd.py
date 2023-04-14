@@ -91,9 +91,9 @@ def plot_continuous_predictor_and_categorical_response(df, predictors, response)
 
     # figure.show()
 
-    if not os.path.isdir("Cont-Cat-plots"):
-        os.mkdir("Cont-Cat-plots")
-    file_path = f"Cont-Cat-plots/{response}-{predictor}-plot.html"
+    if not os.path.isdir("plots"):
+        os.mkdir("plots")
+    file_path = f"plots/{predictor}-plot.html"
     urls_1.append(file_path)
     figure.write_html(file=file_path, include_plotlyjs="cdn")
 
@@ -185,9 +185,9 @@ def plot_categorical_predictor_and_continuous_response(df, predictors, response)
         figure.update_xaxes(title_text="Predictor Bin")
         # figure.show()
 
-        if not os.path.isdir("Cat-Cont-plots"):
-            os.mkdir("Cat-Cont-plots")
-        file_path = f"Cat-Cont-plots/{response}-{predictor}-plot.html"
+        if not os.path.isdir("plots"):
+            os.mkdir("plots")
+        file_path = f"plots/{predictor}-plot.html"
         urls_2.append(file_path)
         figure.write_html(file=file_path, include_plotlyjs="cdn")
 
@@ -274,9 +274,9 @@ def plot_continuous_predictor_and_continuous_response(df, predictor, response):
 
     # figure.show()
 
-    if not os.path.isdir("Cont-Cont-plots"):
-        os.mkdir("Cont-Cont-plots")
-    file_path = f"Cont-Cont-plots/{response}-{predictor}-plot.html"
+    if not os.path.isdir("plots"):
+        os.mkdir("plots")
+    file_path = f"plots/{predictor}-plot.html"
     urls_3.append(file_path)
     figure.write_html(file=file_path, include_plotlyjs="cdn")
     return
@@ -369,9 +369,9 @@ def plot_categorical_predictor_and_categorical_response(df, predictors, response
 
     # figure.show()
 
-    if not os.path.isdir("Cat-Cat-plots"):
-        os.mkdir("Cat-Cat-plots")
-    file_path = f"Cat-Cat-plots/{response}-{predictor}-plot.html"
+    if not os.path.isdir("plots"):
+        os.mkdir("plots")
+    file_path = f"plots/{predictor}-plot.html"
     urls_4.append(file_path)
     figure.write_html(file=file_path, include_plotlyjs="cdn")
 

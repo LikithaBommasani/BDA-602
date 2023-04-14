@@ -11,7 +11,6 @@ from plotly import figure_factory as ff
 from sklearn import datasets
 from sklearn.ensemble import RandomForestRegressor
 
-
 # load data code, plots code and linearregression code is taken from the lecture slides
 # Load data : https://teaching.mrsharky.com/sdsu_fall_2020_lecture02.html#/13/4
 # Plots: https://teaching.mrsharky.com/sdsu_fall_2020_lecture07.html#/4/2
@@ -44,7 +43,7 @@ class Load_Test_Datasets:
         return self.all_data_sets
 
     def Fetch_sample_datasets(
-            self, dataset_name: str = None
+        self, dataset_name: str = None
     ) -> Tuple[pandas.DataFrame, List[str], str]:
 
         if dataset_name is None:
@@ -506,7 +505,7 @@ def plot_continuous_predictor_and_continuous_response(df, predictor, response):
         predictor_data, bins=10, range=(np.min(predictor_data), np.max(predictor_data))
     )
 
-    #Reference : https://stackoverflow.com/questions/72563395/summing-a-numpy-array-based-on-a-multi-labeled-mask
+    # Reference : https://stackoverflow.com/questions/72563395/summing-a-numpy-array-based-on-a-multi-labeled-mask
     for i in range(len(bins) - 1):
         mask = (predictor_data >= bins[i]) & (predictor_data < bins[i + 1])
         count = np.sum(mask)

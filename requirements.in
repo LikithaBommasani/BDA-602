@@ -1,2 +1,7 @@
 numpy
 pandas
+ipython==8.12.0
+plotly
+seaborn
+sklearn
+statsmodels

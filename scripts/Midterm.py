@@ -2,7 +2,6 @@ import os
 import webbrowser
 
 import pandas as pd
-import plotly.graph_objs as go
 from correlation import cat_cont_correlation_ratio, cat_correlation
 from Load_Data import Load_Test_Datasets
 from msd import (
@@ -47,8 +46,14 @@ def create_correlation_table(correlation, correlation_method, table_title):
             variable_2 = correlation.columns[j]
             if variable_1 != variable_2:
                 corr_value = correlation.iloc[i, j]
-                plot_var_1 = f'<a href="{variable_1}.html">Plot for {variable_1}</a>'
-                plot_var_2 = f'<a href="{variable_2}.html">Plot for {variable_2}</a>'
+                plot_var_1 = (
+                    f'<a target="_blank" rel="noopener noreferrer" href="./plots/'
+                    f'{variable_1}-plot.html">Plot for {variable_1}</a>'
+                )
+                plot_var_2 = (
+                    f'<a target="_blank" rel="noopener noreferrer" href="./plots/'
+                    f'{variable_2}-plot.html">Plot for {variable_2}</a>'
+                )
                 table_data.append(
                     [variable_1, variable_2, corr_value, plot_var_1, plot_var_2]
                 )
@@ -56,26 +61,33 @@ def create_correlation_table(correlation, correlation_method, table_title):
     df = pd.DataFrame(table_data[1:], columns=table_data[0])
     df_sorted = df.sort_values(by="Correlation", ascending=False)
 
-    table = go.Table(
-        header=dict(
-            values=df_sorted.columns, fill_color="paleturquoise", align="center"
-        ),
-        cells=dict(
-            values=[
-                df_sorted["Variable 1"],
-                df_sorted["Variable 2"],
-                df_sorted["Correlation"],
-                df_sorted["plot_var_1"],
-                df_sorted["plot_var_2"],
-            ],
-            fill_color="lavender",
-            align="center",
-        ),
-    )
+    html_table = df_sorted.to_html(render_links=True, escape=False)
 
-    fig = go.Figure(data=[table])
-    fig.update_layout(title=table_title)
-    return fig
+    html_table = f"<h2>{table_title}</h2>" + html_table
+    html_table = f'<div style="margin: 0 auto; width: fit-content;">{html_table}</div>'
+    return html_table
+
+    #
+    # table = go.Table(
+    #     header=dict(
+    #         values=df_sorted.columns, fill_color="paleturquoise", align="center"
+    #     ),
+    #     cells=dict(
+    #         values=[
+    #             df_sorted["Variable 1"],
+    #             df_sorted["Variable 2"],
+    #             df_sorted["Correlation"],
+    #             df_sorted["plot_var_1"],
+    #             df_sorted["plot_var_2"],
+    #         ],
+    #         fill_color="lavender",
+    #         align="center",
+    #     ),
+    # )
+    #
+    # fig = go.Figure(data=[table])
+    # fig.update_layout(title=table_title)
+    # return fig
 
 
 def plot_correlation_matrix(correlation_matrix, title, xaxis_title, yaxis_title):
@@ -117,12 +129,12 @@ def cont_cont_correlation(X, cont):
 
     # show  table
     if not correlation_matrix.empty:
-        fig2 = create_correlation_table(
+        html2 = create_correlation_table(
             correlation_matrix, " Pearson ", " Correlation Pearson Table"
         )
         with open("my_report.html", "w") as f:
             f.write(fig1.to_html(full_html=False, include_plotlyjs="cdn"))
-            f.write(fig2.to_html(full_html=False, include_plotlyjs="cdn"))
+            f.write(html2)
     else:
         print("Correlation matrix is empty.")
 
@@ -147,7 +159,6 @@ def cat_cat_correlation(X, cat):
         }
     )
 
-
     # Pivot the dataframe to create a correlation matrix
     # Reference: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.pivot.html
     correlation_matrix = df.pivot(
@@ -161,13 +172,13 @@ def cat_cat_correlation(X, cat):
         "Variable 2",
     )
     if not correlation_matrix.empty:
-        fig2 = create_correlation_table(
+        html2 = create_correlation_table(
             correlation_matrix, " Tschuprow ", " Correlation Tschuprow Table"
         )
 
         with open("my_report.html", "a") as f:
             f.write(fig1.to_html(full_html=False, include_plotlyjs="cdn"))
-            f.write(fig2.to_html(full_html=False, include_plotlyjs="cdn"))
+            f.write(html2)
     else:
         print("Correlation matrix is empty.")
         with open("my_report.html", "a") as f:
@@ -209,12 +220,12 @@ def cat_cont_correlation(X, cont, cat):
     )
 
     if not correlation_matrix.empty:
-        fig2 = create_correlation_table(
+        html2 = create_correlation_table(
             correlation_matrix, " Ratio Table", " Correlation Ratio Table"
         )
         with open("my_report.html", "a") as f:
             f.write(fig1.to_html(full_html=False, include_plotlyjs="cdn"))
-            f.write(fig2.to_html(full_html=False, include_plotlyjs="cdn"))
+            f.write(html2)
     else:
         print("Correlation matrix is empty.")
 
