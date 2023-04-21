@@ -16,7 +16,7 @@ def main():
     sql_engine = sqlalchemy.create_engine(connect_string)
 
     query = """
-             SELECT * FROM features ; """
+             SELECT * FROM features_ratio; """
     df = pandas.read_sql_query(query, sql_engine)
     print(df.head())
 
