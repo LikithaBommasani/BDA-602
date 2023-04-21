@@ -1,7 +1,10 @@
+import itertools
 import os
 import webbrowser
 
+import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 from correlation import cat_cont_correlation_ratio, cat_correlation
 from Load_Data import Load_Test_Datasets
 from msd import (
@@ -67,28 +70,6 @@ def create_correlation_table(correlation, correlation_method, table_title):
     html_table = f'<div style="margin: 0 auto; width: fit-content;">{html_table}</div>'
     return html_table
 
-    #
-    # table = go.Table(
-    #     header=dict(
-    #         values=df_sorted.columns, fill_color="paleturquoise", align="center"
-    #     ),
-    #     cells=dict(
-    #         values=[
-    #             df_sorted["Variable 1"],
-    #             df_sorted["Variable 2"],
-    #             df_sorted["Correlation"],
-    #             df_sorted["plot_var_1"],
-    #             df_sorted["plot_var_2"],
-    #         ],
-    #         fill_color="lavender",
-    #         align="center",
-    #     ),
-    # )
-    #
-    # fig = go.Figure(data=[table])
-    # fig.update_layout(title=table_title)
-    # return fig
-
 
 def plot_correlation_matrix(correlation_matrix, title, xaxis_title, yaxis_title):
     # Reference: https://plotly.github.io/plotly.py-docs/generated/plotly.figure_factory.create_annotated_heatmap.html
@@ -109,10 +90,6 @@ def plot_correlation_matrix(correlation_matrix, title, xaxis_title, yaxis_title)
         fig.update_layout(
             title=title, xaxis=dict(title=xaxis_title), yaxis=dict(title=yaxis_title)
         )
-
-        # show plot
-        # fig.show()
-        # fig.write_html(file=f"{title} plot.html", include_plotlyjs="cdn")
         return fig
 
     else:
@@ -230,6 +207,213 @@ def cat_cont_correlation(X, cont, cat):
         print("Correlation matrix is empty.")
 
 
+def cont_cont_brute_force(df, cont_pred_list, response):
+    # create a new DataFrame to store the binned values
+    binned_df = df.copy()
+
+    # iterate over each pair of continuous predictors
+    for i, cont_1 in enumerate(cont_pred_list):
+        for j, cont_2 in enumerate(cont_pred_list):
+            if i < j:
+                c1_binned, c2_binned = "binned_" + cont_1, "binned_" + cont_2
+                binned_df[c1_binned] = (pd.cut(binned_df[cont_1], bins=10)).apply(
+                    lambda x: round(x.mid, 3)
+                )
+                binned_df[c2_binned] = (pd.cut(binned_df[cont_2], bins=10)).apply(
+                    lambda x: round(x.mid, 3)
+                )
+
+                # compute mean of response variable for each binned group
+                mean = {response: np.mean}
+                binned_df_grouped = (
+                    binned_df.groupby([c1_binned, c2_binned]).agg(mean).reset_index()
+                )
+
+                fig = go.Figure(
+                    data=go.Heatmap(
+                        x=binned_df_grouped[c1_binned].astype(str).tolist(),
+                        y=binned_df_grouped[c2_binned].astype(str).tolist(),
+                        z=binned_df_grouped[response].tolist(),
+                        colorscale="rdbu",
+                        colorbar=dict(title="Mean(" + response + ")"),
+                    )
+                )
+
+                fig.update_layout(
+                    title="Correlation heatmap for " + cont_1 + " and " + cont_2,
+                    xaxis=dict(title=cont_1),
+                    yaxis=dict(title=cont_2),
+                    width=800,
+                    height=600,
+                )
+                if not os.path.isdir("bruteforce_plots"):
+                    os.mkdir("bruteforce_plots")
+                file_path = f"bruteforce_plots/{cont_1}-{cont_2}-plot.html"
+
+                fig.write_html(file=file_path, include_plotlyjs="cdn")
+
+                html = brute_create_correlation_table(
+                    cont_pred_list, " Continuous/Continuous Brute_Force Table"
+                )
+                with open("my_report.html", "a") as f:
+
+                    f.write(html)
+
+
+def cat1_cat1_brute_force(df, cat_pred_list, response):
+    # iterate over each pair of categorical predictors
+    for i, cat_1 in enumerate(cat_pred_list):
+        for j, cat_2 in enumerate(cat_pred_list):
+            if i < j:
+                c1_binned, c2_binned = "binned:" + cat_1, "binned:" + cat_2
+                binned_df = df[[cat_1, cat_2, response]].copy()
+                binned_df[c1_binned] = binned_df[cat_1]
+                binned_df[c2_binned] = binned_df[cat_2]
+
+                # compute mean of response variable for each binned group
+                mean = {response: np.mean}
+                binned_df = (
+                    binned_df.groupby([c1_binned, c2_binned]).agg(mean).reset_index()
+                )
+
+                fig1 = go.Figure(
+                    data=go.Heatmap(
+                        x=binned_df[c1_binned].tolist(),
+                        y=binned_df[c2_binned].tolist(),
+                        z=binned_df[response].tolist(),
+                        colorscale="rdbu",
+                        colorbar=dict(title="Mean(" + response + ")"),
+                    )
+                )
+
+                fig1.update_layout(
+                    title="Correlation heatmap for " + cat_1 + " and " + cat_2,
+                    xaxis=dict(title=cat_1),
+                    yaxis=dict(title=cat_2),
+                    width=800,
+                    height=600,
+                )
+
+                if not os.path.isdir("bruteforce_plots"):
+                    os.mkdir("bruteforce_plots")
+                file_path = f"bruteforce_plots/{cat_1}-{cat_2}-plot.html"
+
+                fig1.write_html(file=file_path, include_plotlyjs="cdn")
+                _ = brute_create_correlation_table(
+                    cat_pred_list, " Categorical/Categorical Brute_Force Table"
+                )
+                # with open("my_report.html", "a") as f:
+                #
+                #     f.write(html1)
+
+
+def brute_create_correlation_table(pred_list, table_title):
+    brute_table_data = [["plot_var_1", "plot_var_2", "plot"]]
+    for i in range(len(pred_list)):
+        for j in range(len(pred_list)):
+            if i < j:
+                variable_1 = pred_list[i]
+                variable_2 = pred_list[j]
+                plot_var_1 = (
+                    f'<a target="_blank" rel="noopener noreferrer" href="./plots/'
+                    f'{variable_1}-plot.html">Plot for {variable_1}</a>'
+                )
+                plot_var_2 = (
+                    f'<a target="_blank" rel="noopener noreferrer" href="./plots/'
+                    f'{variable_2}-plot.html">Plot for {variable_2}</a>'
+                )
+                plot = (
+                    f'<a target="_blank" rel="noopener noreferrer" href="./bruteforce_plots/'
+                    f'{variable_1}-{variable_2}-plot.html">View Plot</a>'
+                )
+                brute_table_data.append([plot_var_1, plot_var_2, plot])
+
+    df = pd.DataFrame(brute_table_data[1:], columns=brute_table_data[0])
+    brute_html_table = df.to_html(render_links=True, escape=False)
+    brute_html_table = f"<h2>{table_title}</h2>" + brute_html_table
+    brute_html_table = (
+        f'<div style="margin: 0 auto; width: fit-content;">{brute_html_table}</div>'
+    )
+    return brute_html_table
+
+
+def cont_cat_brute_force(df, cont_pred_list, cat_pred_list, response):
+    # create a new DataFrame to store the binned values
+    binned_df = df.copy()
+
+    # create a list of all possible pairs of continuous and categorical predictors
+    pred_pairs = list(itertools.product(cont_pred_list, cat_pred_list))
+
+    # iterate over each pair of predictors
+    for cont_pred, cat_pred in pred_pairs:
+        # create binned versions of the predictors
+        cont_binned = "binned_" + cont_pred
+        binned_df[cont_binned] = pd.cut(binned_df[cont_pred], bins=10).apply(
+            lambda x: round(x.mid, 3)
+        )
+
+        # group by the binned predictors and compute the mean of the response variable
+        mean_response = (
+            binned_df.groupby([cont_binned, cat_pred])[response].mean().reset_index()
+        )
+
+        # plot the heatmap
+        fig = go.Figure(
+            data=go.Heatmap(
+                x=mean_response[cat_pred],
+                y=mean_response[cont_binned],
+                z=mean_response[response],
+                colorscale="rdbu",
+                colorbar=dict(title="Mean(" + response + ")"),
+            )
+        )
+
+        fig.update_layout(
+            title="Correlation heatmap for " + cont_pred + " and " + cat_pred,
+            xaxis=dict(title=cat_pred),
+            yaxis=dict(title=cont_pred),
+            width=800,
+            height=600,
+        )
+
+        if not os.path.isdir("brute_force_plots"):
+            os.mkdir("brute_force_plots")
+        file_path = f"brute_force_plots/{cont_pred}-{cat_pred}-plot.html"
+        fig.write_html(file=file_path, include_plotlyjs="cdn")
+
+    html_table = cont_cat_create_correlation_table(
+        cont_pred_list, cat_pred_list, " Continuous/Categorical Brute_Force Table"
+    )
+
+    with open("my_report.html", "a") as f:
+        f.write(html_table)
+
+
+def cont_cat_create_correlation_table(cont_pred_list, cat_pred_list, table_title):
+    table_data = [["Variable 1", "Variable 2", "plot"]]
+    for cont_pred in cont_pred_list:
+        for cat_pred in cat_pred_list:
+            plot_var_1 = (
+                f'<a target="_blank" rel="noopener noreferrer" href="./plots/'
+                f'{cont_pred}-plot.html">Plot for {cont_pred}</a>'
+            )
+            plot_var_2 = (
+                f'<a target="_blank" rel="noopener noreferrer" href="./plots/'
+                f'{cat_pred}-plot.html">Plot for {cat_pred}</a>'
+            )
+            plot = (
+                f'<a target="_blank" rel="noopener noreferrer" href="./brute_force_plots/'
+                f'{cont_pred}-{cat_pred}-plot.html">View Plot</a>'
+            )
+            table_data.append([plot_var_1, plot_var_2, plot])
+
+    df = pd.DataFrame(table_data[1:], columns=table_data[0])
+    html_table = df.to_html(render_links=True, escape=False)
+    html_table = f"<h2>{table_title}</h2>" + html_table
+    html_table = f'<div style="margin: 0 auto; width: fit-content;">{html_table}</div>'
+    return html_table
+
+
 def main():
     test_datasets = Load_Test_Datasets()
     for test in test_datasets.Fetch_datasets():
@@ -244,10 +428,12 @@ def main():
     print(f"respsonse:{response_type}")
     print(f"cat_pred:{cat_pred}")
     print(f"cont_pred:{cont_pred}")
-    # print(df.adult_male)
     cont_cont_correlation(x, cont_pred)
     cat_cat_correlation(x, cat_pred)
     cat_cont_correlation(x, cont_pred, cat_pred)
+    cont_cont_brute_force(df, cont_pred, R_Response)
+    cat1_cat1_brute_force(df, cat_pred, R_Response)
+    cont_cat_brute_force(df, cont_pred, cat_pred, R_Response)
 
     for predictor in cont_pred:
         if response_type == "Cont":
