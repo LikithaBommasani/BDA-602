@@ -2,7 +2,6 @@ import itertools
 import os
 import webbrowser
 
-import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from correlation import cat_cont_correlation_ratio, cat_correlation
@@ -238,7 +237,7 @@ def cont_cont_brute_force(df, cont_pred_list, response):
                     (binned_df_grouped["mean"] - pop_mean) ** 2
                 ) / 100
                 unweighted_msd = binned_df_grouped["unweighted_msd"].sum()
-                # unweighted_msd_list.append(unweighted_msd)
+
                 print(unweighted_msd)
 
                 # calculate weighted mean square deviation
@@ -249,7 +248,7 @@ def cont_cont_brute_force(df, cont_pred_list, response):
                     (binned_df_grouped["mean"] - pop_mean) ** 2
                 ) * binned_df_grouped["weighted_count"]
                 weighted_msd = binned_df_grouped["weighted_msd"].sum()
-                # weighted_msd_list.append(weighted_msd)
+
                 print(weighted_msd)
 
                 fig = go.Figure(
@@ -284,31 +283,55 @@ def cont_cont_brute_force(df, cont_pred_list, response):
 
                 with open("my_report.html", "a") as f:
                     f.write(html)
-                    # f.write("<h2>" + cont_1 + " vs " + cont_2 + "</h2>")
-                    # f.write(binned_df_grouped.to_html(index=False))
 
 
 def cat_cat_brute_force(df, cat_pred_list, response):
+    # create a new DataFrame to store the binned values
+    binned_df = df.copy()
+
     # iterate over each pair of categorical predictors
     for i, cat_1 in enumerate(cat_pred_list):
         for j, cat_2 in enumerate(cat_pred_list):
             if i < j:
                 c1_binned, c2_binned = "binned:" + cat_1, "binned:" + cat_2
-                binned_df = df[[cat_1, cat_2, response]].copy()
                 binned_df[c1_binned] = binned_df[cat_1]
                 binned_df[c2_binned] = binned_df[cat_2]
 
                 # compute mean of response variable for each binned group
-                mean = {response: np.mean}
-                binned_df = (
-                    binned_df.groupby([c1_binned, c2_binned]).agg(mean).reset_index()
+                binned_df_grouped = (
+                    binned_df.groupby([c1_binned, c2_binned])[response]
+                    .agg(["count", "mean"])
+                    .reset_index()
                 )
+
+                # calculate the population mean of the response variable
+                pop_mean = df[response].mean()
+
+                # calculate unweighted mean square deviation
+                binned_df_grouped["unweighted_msd"] = (
+                    (binned_df_grouped["mean"] - pop_mean) ** 2
+                ) * binned_df_grouped["count"]
+                unweighted_msd = (
+                    binned_df_grouped["unweighted_msd"].sum()
+                    / binned_df_grouped["count"].sum()
+                )
+                print(unweighted_msd)
+
+                # calculate weighted mean square deviation
+                binned_df_grouped["weighted_count"] = binned_df_grouped["count"] / len(
+                    df
+                )
+                binned_df_grouped["weighted_msd"] = (
+                    (binned_df_grouped["mean"] - pop_mean) ** 2
+                ) * binned_df_grouped["weighted_count"]
+                weighted_msd = binned_df_grouped["weighted_msd"].sum()
+                print(weighted_msd)
 
                 fig1 = go.Figure(
                     data=go.Heatmap(
-                        x=binned_df[c1_binned].tolist(),
-                        y=binned_df[c2_binned].tolist(),
-                        z=binned_df[response].tolist(),
+                        x=binned_df_grouped[c1_binned].astype(str).tolist(),
+                        y=binned_df_grouped[c2_binned].astype(str).tolist(),
+                        z=binned_df_grouped["mean"].tolist(),
                         colorscale="rdbu",
                         colorbar=dict(title="Mean(" + response + ")"),
                     )
@@ -327,12 +350,13 @@ def cat_cat_brute_force(df, cat_pred_list, response):
                 file_path = f"bruteforce_plots/{cat_1}-{cat_2}-plot.html"
 
                 fig1.write_html(file=file_path, include_plotlyjs="cdn")
-                _ = brute_create_correlation_table(
-                    cat_pred_list, " Categorical/Categorical Brute_Force Table"
-                )
-                # with open("my_report.html", "a") as f:
+
+                # html = brute_create_correlation_table(
+                #     cat_pred_list, " Categorical/Categorical Brute_Force Table"
+                # )
                 #
-                #     f.write(html1)
+                # with open("my_report.html", "a") as f:
+                #     f.write(html)
 
 
 def brute_create_correlation_table(pred_list, table_title):
@@ -417,6 +441,26 @@ def cont_cat_brute_force(df, cont_pred_list, cat_pred_list, response):
             binned_df.groupby([cont_binned, cat_pred])[response].mean().reset_index()
         )
 
+        # calculate the population mean of the response variable
+        pop_mean = df[response].mean()
+
+        # calculate unweighted mean square deviation
+        mean_response["unweighted_msd"] = (
+            (mean_response[response] - pop_mean) ** 2
+        ) / len(mean_response)
+        unweighted_msd = mean_response["unweighted_msd"].sum()
+        print("Unweighted MSD:", unweighted_msd)
+
+        # calculate weighted mean square deviation
+        mean_response["weighted_count"] = mean_response.groupby(
+            [cont_binned, cat_pred]
+        )[response].transform("count") / len(df)
+        mean_response["weighted_msd"] = (
+            (mean_response[response] - pop_mean) ** 2
+        ) * mean_response["weighted_count"]
+        weighted_msd = mean_response["weighted_msd"].sum()
+        print("Weighted MSD:", weighted_msd)
+
         # plot the heatmap
         fig = go.Figure(
             data=go.Heatmap(
@@ -441,7 +485,7 @@ def cont_cat_brute_force(df, cont_pred_list, cat_pred_list, response):
         file_path = f"bruteforce_plots/{cont_pred}-{cat_pred}-plot.html"
         fig.write_html(file=file_path, include_plotlyjs="cdn")
 
-    html_table = cont_cat_create_correlation_table(
+    html_table = cont_cat_brute_create_correlation_table(
         cont_pred_list, cat_pred_list, " Continuous/Categorical Brute_Force Table"
     )
 
@@ -449,7 +493,7 @@ def cont_cat_brute_force(df, cont_pred_list, cat_pred_list, response):
         f.write(html_table)
 
 
-def cont_cat_create_correlation_table(cont_pred_list, cat_pred_list, table_title):
+def cont_cat_brute_create_correlation_table(cont_pred_list, cat_pred_list, table_title):
     table_data = [["Variable 1", "Variable 2", "plot"]]
     for cont_pred in cont_pred_list:
         for cat_pred in cat_pred_list:
