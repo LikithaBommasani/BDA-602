@@ -288,7 +288,7 @@ def cont_cont_brute_force(df, cont_pred_list, response):
                     # f.write(binned_df_grouped.to_html(index=False))
 
 
-def cat1_cat1_brute_force(df, cat_pred_list, response):
+def cat_cat_brute_force(df, cat_pred_list, response):
     # iterate over each pair of categorical predictors
     for i, cat_1 in enumerate(cat_pred_list):
         for j, cat_2 in enumerate(cat_pred_list):
@@ -436,9 +436,9 @@ def cont_cat_brute_force(df, cont_pred_list, cat_pred_list, response):
             height=600,
         )
 
-        if not os.path.isdir("brute_force_plots"):
-            os.mkdir("brute_force_plots")
-        file_path = f"brute_force_plots/{cont_pred}-{cat_pred}-plot.html"
+        if not os.path.isdir("bruteforce_plots"):
+            os.mkdir("bruteforce_plots")
+        file_path = f"bruteforce_plots/{cont_pred}-{cat_pred}-plot.html"
         fig.write_html(file=file_path, include_plotlyjs="cdn")
 
     html_table = cont_cat_create_correlation_table(
@@ -462,7 +462,7 @@ def cont_cat_create_correlation_table(cont_pred_list, cat_pred_list, table_title
                 f'{cat_pred}-plot.html">Plot for {cat_pred}</a>'
             )
             plot = (
-                f'<a target="_blank" rel="noopener noreferrer" href="./brute_force_plots/'
+                f'<a target="_blank" rel="noopener noreferrer" href="./bruteforce_plots/'
                 f'{cont_pred}-{cat_pred}-plot.html">View Plot</a>'
             )
             table_data.append([plot_var_1, plot_var_2, plot])
@@ -492,7 +492,7 @@ def main():
     cat_cat_correlation(x, cat_pred)
     cat_cont_correlation(x, cont_pred, cat_pred)
     cont_cont_brute_force(df, cont_pred, R_Response)
-    cat1_cat1_brute_force(df, cat_pred, R_Response)
+    cat_cat_brute_force(df, cat_pred, R_Response)
     cont_cat_brute_force(df, cont_pred, cat_pred, R_Response)
 
     for predictor in cont_pred:
