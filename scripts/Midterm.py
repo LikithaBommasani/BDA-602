@@ -224,16 +224,39 @@ def cont_cont_brute_force(df, cont_pred_list, response):
                 )
 
                 # compute mean of response variable for each binned group
-                mean = {response: np.mean}
                 binned_df_grouped = (
-                    binned_df.groupby([c1_binned, c2_binned]).agg(mean).reset_index()
+                    binned_df.groupby([c1_binned, c2_binned])[response]
+                    .agg(["count", "mean"])
+                    .reset_index()
                 )
+
+                # calculate the population mean of the response variable
+                pop_mean = df[response].mean()
+
+                # calculate unweighted mean square deviation
+                binned_df_grouped["unweighted_msd"] = (
+                    (binned_df_grouped["mean"] - pop_mean) ** 2
+                ) / 100
+                unweighted_msd = binned_df_grouped["unweighted_msd"].sum()
+                # unweighted_msd_list.append(unweighted_msd)
+                print(unweighted_msd)
+
+                # calculate weighted mean square deviation
+                binned_df_grouped["weighted_count"] = binned_df_grouped["count"] / len(
+                    df
+                )
+                binned_df_grouped["weighted_msd"] = (
+                    (binned_df_grouped["mean"] - pop_mean) ** 2
+                ) * binned_df_grouped["weighted_count"]
+                weighted_msd = binned_df_grouped["weighted_msd"].sum()
+                # weighted_msd_list.append(weighted_msd)
+                print(weighted_msd)
 
                 fig = go.Figure(
                     data=go.Heatmap(
                         x=binned_df_grouped[c1_binned].astype(str).tolist(),
                         y=binned_df_grouped[c2_binned].astype(str).tolist(),
-                        z=binned_df_grouped[response].tolist(),
+                        z=binned_df_grouped["mean"].tolist(),
                         colorscale="rdbu",
                         colorbar=dict(title="Mean(" + response + ")"),
                     )
@@ -252,12 +275,17 @@ def cont_cont_brute_force(df, cont_pred_list, response):
 
                 fig.write_html(file=file_path, include_plotlyjs="cdn")
 
+                # html = brute_create_correlation_table(
+                #     cont_pred_list, " Continuous/Continuous Brute_Force Table", unweighted_msd, weighted_msd
+                # )
                 html = brute_create_correlation_table(
                     cont_pred_list, " Continuous/Continuous Brute_Force Table"
                 )
-                with open("my_report.html", "a") as f:
 
+                with open("my_report.html", "a") as f:
                     f.write(html)
+                    # f.write("<h2>" + cont_1 + " vs " + cont_2 + "</h2>")
+                    # f.write(binned_df_grouped.to_html(index=False))
 
 
 def cat1_cat1_brute_force(df, cat_pred_list, response):
@@ -335,6 +363,38 @@ def brute_create_correlation_table(pred_list, table_title):
         f'<div style="margin: 0 auto; width: fit-content;">{brute_html_table}</div>'
     )
     return brute_html_table
+
+
+# def brute_create_correlation_table(pred_list, table_title, unweighted_msd, weighted_msd):
+#     brute_table_data = [["plot_var_1", "plot_var_2", "unweighted_msd", "weighted_msd", "plot"]]
+#     for i in range(len(pred_list)):
+#         for j in range(len(pred_list)):
+#             if i < j:
+#                 variable_1 = pred_list[i]
+#                 variable_2 = pred_list[j]
+#                 plot_var_1 = (
+#                     f'<a target="_blank" rel="noopener noreferrer" href="./plots/'
+#                     f'{variable_1}-plot.html">Plot for {variable_1}</a>'
+#                 )
+#                 plot_var_2 = (
+#                     f'<a target="_blank" rel="noopener noreferrer" href="./plots/'
+#                     f'{variable_2}-plot.html">Plot for {variable_2}</a>'
+#                 )
+#                 unweighted_msd_val = unweighted_msd
+#                 weighted_msd_val = weighted_msd
+#                 plot = (
+#                     f'<a target="_blank" rel="noopener noreferrer" href="./bruteforce_plots/'
+#                     f'{variable_1}-{variable_2}-plot.html">View Plot</a>'
+#                 )
+#                 brute_table_data.append([plot_var_1, plot_var_2, unweighted_msd_val, weighted_msd_val, plot])
+#
+#     df = pd.DataFrame(brute_table_data[1:], columns=brute_table_data[0])
+#     brute_html_table = df.to_html(render_links=True, escape=False)
+#     brute_html_table = f"<h2>{table_title}</h2>" + brute_html_table
+#     brute_html_table = (
+#         f'<div style="margin: 0 auto; width: fit-content;">{brute_html_table}</div>'
+#     )
+#     return brute_html_table
 
 
 def cont_cat_brute_force(df, cont_pred_list, cat_pred_list, response):
