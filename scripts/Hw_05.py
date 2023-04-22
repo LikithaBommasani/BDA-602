@@ -19,6 +19,11 @@ def main():
              SELECT * FROM features_ratio; """
     df = pandas.read_sql_query(query, sql_engine)
     print(df.head())
+    R_Response = 'HomeTeamWins'
+    ignore_columns = ['game_id', 'home_team_id', 'away_team_id']
+    P_Predictors = [x for x in df.columns if x != R_Response and x not in ignore_columns]
+    print(R_Response)
+    print(P_Predictors)
 
 
 if __name__ == "__main__":
