@@ -56,8 +56,11 @@ def cont_resp_cat_predictor(df, pred, R_Response):
         yaxis_title=R_Response,
         violinmode="group",
     )
-    print("yes")
-    fig.show()
+    # fig.show()
+    if not os.path.isdir("n_plots"):
+        os.mkdir("n_plots")
+    file_path = f"plots/{pred}-{R_Response}-plot.html"
+    fig.write_html(file=file_path, include_plotlyjs="cdn")
 
 
 def cont_response_cont_predictor(df, pred, R_Response):
@@ -67,10 +70,11 @@ def cont_response_cont_predictor(df, pred, R_Response):
         xaxis_title=f"Predictor - {pred}",
         yaxis_title=f"Response - {R_Response}",
     )
-    fig.show()
-    # fig.write_html(
-    # file=f"{pred} vs {R_Response} plot.html", include_plotlyjs="cdn"
-    # )  # From HW_01
+    # fig.show()
+    if not os.path.isdir("n_plots"):
+        os.mkdir("n_plots")
+    file_path = f"n_plots/{pred}-{R_Response}plot.html"
+    fig.write_html(file=file_path, include_plotlyjs="cdn")
 
 
 def cat_resp_cont_predictor(df, pred, R_Response, Y):
@@ -110,7 +114,11 @@ def cat_resp_cont_predictor(df, pred, R_Response, Y):
         xaxis_title=R_Response,
         yaxis_title=pred,
     )
-    fig.show()
+    # fig.show()
+    if not os.path.isdir("n_plots"):
+        os.mkdir("n_plots")
+    file_path = f"n_plots/{pred}-{R_Response}plot.html"
+    fig.write_html(file=file_path, include_plotlyjs="cdn")
 
 
 def cat_response_cat_predictor(df, pred, R_Response):
@@ -119,8 +127,11 @@ def cat_response_cat_predictor(df, pred, R_Response):
     )  # Reference: https://plotly.com/python-api-reference/generated/plotly.express.density_heatmap.html
     fig.update_xaxes(title=R_Response)
     fig.update_yaxes(title=pred)  # Reference : https://plotly.com/python/axes/
-    fig.show()
-    # fig.write_html(file=f"{pred} vs {R_Response} plot.html", include_plotlyjs="cdn")
+    # fig.show()
+    if not os.path.isdir("n_plots"):
+        os.mkdir("n_plots")
+    file_path = f"n_plots/{pred}-{R_Response}plot.html"
+    fig.write_html(file=file_path, include_plotlyjs="cdn")
 
 
 def LinearRegression(dataset, response, pred):
@@ -151,7 +162,7 @@ def LinearRegression(dataset, response, pred):
 def LogisticRegression(dataset, response, pred):
     X = dataset[pred]
     y = dataset[response]
-
+    results = {}
     for idx, column in enumerate(X):
         feature_name = pred[idx]
         predictor = statsmodels.api.add_constant(X[column])
@@ -160,23 +171,14 @@ def LogisticRegression(dataset, response, pred):
             y.astype(float), predictor.astype(float)
         )
         linear_regression_model_fitted = linear_regression_model.fit()
-        print(f"Variable: {feature_name}")
-        print(linear_regression_model_fitted.summary())
-
-        t_value = round(linear_regression_model_fitted.tvalues[1], 6)
-        p_value = "{:.6e}".format(linear_regression_model_fitted.pvalues[1])
-        print(t_value, p_value)
-        fig = px.scatter(dataset, x=column, y=response)
-        fig.update_layout(
-            title=f"Variable: {feature_name}: (t-value={t_value}) (p-value={p_value})",
-            xaxis_title=f"Variable: {feature_name}",
-            yaxis_title=f"Variable:{response}",
-        )
-        # fig.show()
-        # fig.write_html(
-        #  file=f"{feature_name} vs {response} plot.html", include_plotlyjs="cdn"
-    # )
-    return t_value, p_value
+        # print(f"Variable: {feature_name}")
+        # print(linear_regression_model_fitted.summary())
+        results[feature_name] = {
+            't_value': round(linear_regression_model_fitted.tvalues[1], 6),
+            'p_value': "{:.6e}".format(linear_regression_model_fitted.pvalues[1])
+        }
+    # print(results)
+    return results
 
 
 def Random_Forest_Variable_importance(dataset, response, pred):
@@ -194,33 +196,43 @@ def Random_Forest_Variable_importance(dataset, response, pred):
         sorted(feature_importance.items(), key=lambda x: x[1], reverse=True)
     )
 
-    print(f"sorted_imp_list - {sorted_imp_list}")
-    # Reference: https://dataindependent.com/pandas/pandas-rank-rank-your-data-pd-df-rank/
-    var_importance_df = pandas.DataFrame(
-        sorted_imp_list.items(), columns=["Variable", "Importance Score"]
-    )
-    var_importance_df["Rank"] = var_importance_df["Importance Score"].rank(
-        ascending=False
-    )
-    var_importance_df = var_importance_df.sort_values("Rank")
-    print(var_importance_df)
-    fig = go.Figure(
-        go.Bar(
-            x=list(sorted_imp_list.keys()),
-            y=list(sorted_imp_list.values()),
-            orientation="v",
+    # print(f"sorted_imp_list - {sorted_imp_list}")
+    results = {}
+    for feature_name in sorted_imp_list.keys():
+        t_value, p_value = LogisticRegression(dataset, response, [feature_name])[feature_name].values()
+        msd_plot_var = (
+
+            f'<a target="_blank" rel="noopener noreferrer" href="./plots/'
+            f'{feature_name}-plot.html">Plot for {feature_name}</a>'
         )
-    )
+        plot_var = (
 
-    fig.update_layout(
-        title="Variable Importance",
-        xaxis_title="Variable",
-        yaxis_title="Importance Score",
-    )
-    # fig.show()
-    # fig.write_html(file=f"{pred} vs {response} plot.html", include_plotlyjs="cdn")
+            f'<a target="_blank" rel="noopener noreferrer" href="./n_plots/'
+            f'{feature_name}-{response}plot.html">Plot for {feature_name}</a>'
+        )
+        results[feature_name] = {
+            'random forest importance': sorted_imp_list[feature_name],
+            't-score': t_value,
+            'p-value': p_value,
+            'plot': plot_var,
+            'msd plot': msd_plot_var
+        }
 
-    return sorted_imp_list, var_importance_df
+    var_importance_df = pandas.DataFrame.from_dict(results, orient='index')
+    var_importance_df.index.name = 'Variable'
+    var_importance_df.reset_index(inplace=True)
+    var_importance_df = var_importance_df[
+        ['Variable', 'random forest importance', 't-score', 'p-value', 'plot', 'msd plot']]
+    var_importance_df_sorted = var_importance_df.sort_values(by='random forest importance', ascending=False)
+    html_table = var_importance_df_sorted.to_html(render_links=True, escape=False)
+    html_table = f"<h2> Continuous Predictors Variable Importance Table</h2>" + html_table
+    html_table = f'<div style="margin: 0 auto; width: fit-content;">{html_table}</div>'
+    with open("my_report.html", "w") as f:
+        # f.write(var_importance_df_sorted.to_html(render_links=True, escape=False, index=False))
+        f.write(html_table)
+
+    # print(var_importance_df.head())
+    return var_importance_df
 
 
 def create_correlation_table(correlation, correlation_method, table_title):
@@ -293,7 +305,7 @@ def cont_cont_correlation(X, cont):
         html2 = create_correlation_table(
             correlation_matrix, " Pearson ", " Correlation Pearson Table"
         )
-        with open("my_report.html", "w") as f:
+        with open("my_report.html", "a") as f:
             f.write(fig1.to_html(full_html=False, include_plotlyjs="cdn"))
             f.write(html2)
     else:
@@ -445,11 +457,11 @@ def cat_cat_brute_force(df, cat_pred_list, response):
 
                 # calculate unweighted mean square deviation
                 binned_df_grouped["unweighted_msd"] = (
-                    (binned_df_grouped["mean"] - pop_mean) ** 2
-                ) * binned_df_grouped["count"]
+                                                              (binned_df_grouped["mean"] - pop_mean) ** 2
+                                                      ) * binned_df_grouped["count"]
                 unweighted_msd = (
-                    binned_df_grouped["unweighted_msd"].sum()
-                    / binned_df_grouped["count"].sum()
+                        binned_df_grouped["unweighted_msd"].sum()
+                        / binned_df_grouped["count"].sum()
                 )
                 print(unweighted_msd)
 
@@ -458,8 +470,8 @@ def cat_cat_brute_force(df, cat_pred_list, response):
                     df
                 )
                 binned_df_grouped["weighted_msd"] = (
-                    (binned_df_grouped["mean"] - pop_mean) ** 2
-                ) * binned_df_grouped["weighted_count"]
+                                                            (binned_df_grouped["mean"] - pop_mean) ** 2
+                                                    ) * binned_df_grouped["weighted_count"]
                 weighted_msd = binned_df_grouped["weighted_msd"].sum()
                 print(weighted_msd)
 
@@ -487,12 +499,12 @@ def cat_cat_brute_force(df, cat_pred_list, response):
 
                 fig1.write_html(file=file_path, include_plotlyjs="cdn")
 
-                # html = brute_create_correlation_table(
-                #     cat_pred_list, " Categorical/Categorical Brute_Force Table"
-                # )
-                #
-                # with open("my_report.html", "a") as f:
-                #     f.write(html)
+    html = brute_create_correlation_table(
+            cat_pred_list, " Categorical/Categorical Brute_Force Table"
+            )
+
+    with open("my_report.html", "a") as f:
+        f.write(html)
 
 
 def cont_cont_brute_force(df, cont_pred_list, response):
@@ -523,8 +535,8 @@ def cont_cont_brute_force(df, cont_pred_list, response):
 
                 # calculate unweighted mean square deviation
                 binned_df_grouped["unweighted_msd"] = (
-                    (binned_df_grouped["mean"] - pop_mean) ** 2
-                ) / 100
+                                                              (binned_df_grouped["mean"] - pop_mean) ** 2
+                                                      ) / 100
                 unweighted_msd = binned_df_grouped["unweighted_msd"].sum()
 
                 print(unweighted_msd)
@@ -534,8 +546,8 @@ def cont_cont_brute_force(df, cont_pred_list, response):
                     df
                 )
                 binned_df_grouped["weighted_msd"] = (
-                    (binned_df_grouped["mean"] - pop_mean) ** 2
-                ) * binned_df_grouped["weighted_count"]
+                                                            (binned_df_grouped["mean"] - pop_mean) ** 2
+                                                    ) * binned_df_grouped["weighted_count"]
                 weighted_msd = binned_df_grouped["weighted_msd"].sum()
 
                 print(weighted_msd)
@@ -566,12 +578,13 @@ def cont_cont_brute_force(df, cont_pred_list, response):
                 # html = brute_create_correlation_table(
                 #     cont_pred_list, " Continuous/Continuous Brute_Force Table", unweighted_msd, weighted_msd
                 # )
-                html = brute_create_correlation_table(
-                    cont_pred_list, " Continuous/Continuous Brute_Force Table"
-                )
 
-                with open("my_report.html", "a") as f:
-                    f.write(html)
+    html = brute_create_correlation_table(
+            cont_pred_list, " Continuous/Continuous Brute_Force Table"
+            )
+
+    with open("my_report.html", "a") as f:
+        f.write(html)
 
 
 def cont_cat_brute_force(df, cont_pred_list, cat_pred_list, response):
@@ -599,8 +612,8 @@ def cont_cat_brute_force(df, cont_pred_list, cat_pred_list, response):
 
         # calculate unweighted mean square deviation
         mean_response["unweighted_msd"] = (
-            (mean_response[response] - pop_mean) ** 2
-        ) / len(mean_response)
+                                                  (mean_response[response] - pop_mean) ** 2
+                                          ) / len(mean_response)
         unweighted_msd = mean_response["unweighted_msd"].sum()
         print("Unweighted MSD:", unweighted_msd)
 
@@ -609,8 +622,8 @@ def cont_cat_brute_force(df, cont_pred_list, cat_pred_list, response):
             [cont_binned, cat_pred]
         )[response].transform("count") / len(df)
         mean_response["weighted_msd"] = (
-            (mean_response[response] - pop_mean) ** 2
-        ) * mean_response["weighted_count"]
+                                                (mean_response[response] - pop_mean) ** 2
+                                        ) * mean_response["weighted_count"]
         weighted_msd = mean_response["weighted_msd"].sum()
         print("Weighted MSD:", weighted_msd)
 
@@ -722,9 +735,24 @@ def main():
 
     query = """ SELECT * FROM features_ratio """
     df = pandas.read_sql_query(query, sql_engine)
+    # print(df.head())
+    # print(df.dtypes)
+    null_values = df['HomeTeamWins'].isna()
+    null_count = df['HomeTeamWins'].isna().sum()
+
+    print(f'null_values = {null_values}')
+    print(f'null_count = {null_count}')
+
+    print(f'total_count = {len(df)}')
+
+    df = df.dropna(subset=['HomeTeamWins'])
+    df = df.fillna(df.median())
+    # converting the response to int type from object
+    df['HomeTeamWins'] = df['HomeTeamWins'].astype('int64')
+    R_Response = "HomeTeamWins"
     print(df.head())
     print(df.dtypes)
-    R_Response = "HomeTeamWins"
+
     ignore_columns = ["game_id", "home_team_id", "away_team_id"]
     P_Predictors = [
         x for x in df.columns if x != R_Response and x not in ignore_columns
@@ -738,7 +766,7 @@ def main():
     print(f"cont_pred:{cont_pred}")
     x = df[P_Predictors]
     y = df[R_Response]
-    print(y)
+    # print(y)
     # Plots for cat, cont
     for pred in cat_pred:
         if response_type == "Cat":
@@ -765,15 +793,15 @@ def main():
         LogisticRegression(df, R_Response, cont_pred)
     # Random Forest For Variable Importance Ranking
     Random_Forest_Variable_importance(df, R_Response, cont_pred)
-    # Correlation
+    # # Correlation
     cont_cont_correlation(x, cont_pred)
     cat_cat_correlation(x, cat_pred)
     cat_cont_correlation(x, cont_pred, cat_pred)
-    # Brute_Force
+    # # Brute_Force
     cont_cont_brute_force(df, cont_pred, R_Response)
     cat_cat_brute_force(df, cat_pred, R_Response)
     cont_cat_brute_force(df, cont_pred, cat_pred, R_Response)
-    # Mean_Response_Plots
+    # # Mean_Response_Plots
     for predictor in cont_pred:
         if response_type == "Cont":
             plot_continuous_predictor_and_continuous_response(df, predictor, R_Response)
@@ -793,7 +821,7 @@ def main():
             plot_categorical_predictor_and_continuous_response(
                 df, [predictor], R_Response
             )
-    # Models
+    # # Models
     classifier(df, P_Predictors, R_Response)
 
 
