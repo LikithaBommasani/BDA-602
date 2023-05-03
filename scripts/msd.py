@@ -35,6 +35,7 @@ def plot_continuous_predictor_and_categorical_response(df, predictors, response)
     s_population = np.array(s_predictor[predictor])
     hist_s_population, _ = np.histogram(s_population, bins=bins)
     p_response = np.zeros_like(hist_count, dtype=float)
+
     for i in range(len(hist_count)):
         if hist_count[i] != 0:
             p_response[i] = hist_s_population[i] / hist_count[i]
@@ -43,6 +44,13 @@ def plot_continuous_predictor_and_categorical_response(df, predictors, response)
 
     s_response_rate = len(s_predictor) / len(df)
     s_response_arr = np.array([s_response_rate] * 10)
+
+    response_population = hist_s_population/hist_count
+    # msd calculation
+    # diff_squared = (response_population - s_response_arr)
+    # msd = np.nansum(diff_squared)/10
+    # print("n MSD:", msd)
+
 
     figure = go.Figure(
         data=go.Bar(
