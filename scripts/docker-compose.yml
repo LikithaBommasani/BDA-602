@@ -18,5 +18,15 @@ services:
     ports:
       - 8000:3306
     restart: unless-stopped
+#  python_sql_service:
+#    container_name: python_sql
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    image: python_sql_service
+#    environment:
+#      PORT: "8080"
+#    volumes:
+#      -
 volumes:
   db:
