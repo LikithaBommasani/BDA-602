@@ -8,8 +8,8 @@ import pandas as pd
 import plotly.graph_objs as go
 import sqlalchemy
 import statsmodels.api
-from correlation_hw_05 import cat_cont_correlation_ratio, cat_correlation
-from msd_hw_05 import (
+from correlation_hw_06 import cat_cont_correlation_ratio, cat_correlation
+from msd_hw_06 import (
     plot_categorical_predictor_and_categorical_response,
     plot_categorical_predictor_and_continuous_response,
     plot_continuous_predictor_and_categorical_response,
