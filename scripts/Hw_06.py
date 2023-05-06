@@ -1,10 +1,13 @@
+import datetime
 import itertools
 import os
 import webbrowser
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas
 import pandas as pd
+import plotly
 import plotly.graph_objs as go
 import sqlalchemy
 import statsmodels.api
@@ -17,8 +20,16 @@ from msd_hw_06 import (
 )
 from plotly import express as px
 from plotly import figure_factory as ff
+from plotly.tools import mpl_to_plotly
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    classification_report,
+    confusion_matrix,
+    roc_auc_score,
+    roc_curve,
+)
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -144,19 +155,19 @@ def LinearRegression(dataset, response, pred):
 
         linear_regression_model = statsmodels.api.OLS(y, predictor)
         linear_regression_model_fitted = linear_regression_model.fit()
-        print(f"Variable: {feature_name}")
-        print(linear_regression_model_fitted.summary())
+        # print(f"Variable: {feature_name}")
+        # print(linear_regression_model_fitted.summary())
 
-        t_value = round(linear_regression_model_fitted.tvalues[1], 6)
+        t_score = round(linear_regression_model_fitted.tvalues[1], 6)
         p_value = "{:.6e}".format(linear_regression_model_fitted.pvalues[1])
-        print(t_value, p_value)
+        # print(t_score, p_value)
         fig = px.scatter(dataset, x=column, y=response)
         fig.update_layout(
-            title=f"Variable: {feature_name}: (t-value={t_value}) (p-value={p_value})",
+            title=f"Variable: {feature_name}: (t-value={t_score}) (p-value={p_value})",
             xaxis_title=f"Variable: {feature_name}",
             yaxis_title=f"Variable:{response}",
         )
-        return t_value, p_value
+        return t_score, p_value
 
 
 def LogisticRegression(dataset, response, pred):
@@ -167,16 +178,17 @@ def LogisticRegression(dataset, response, pred):
         feature_name = pred[idx]
         predictor = statsmodels.api.add_constant(X[column])
         # Reference: https://deepnote.com/@leung-leah/Untitled-Python-Project-3e2bf4ca-aa22-4756-8bde-17802d2628c4
-        linear_regression_model = statsmodels.api.Logit(
+        Logistic_regression_model = statsmodels.api.Logit(
             y.astype(float), predictor.astype(float)
         )
-        linear_regression_model_fitted = linear_regression_model.fit()
+        Logistic_regression_model_fitted = Logistic_regression_model.fit()
         # print(f"Variable: {feature_name}")
-        # print(linear_regression_model_fitted.summary())
+        print(Logistic_regression_model_fitted.summary())
         results[feature_name] = {
-            "t_value": round(linear_regression_model_fitted.tvalues[1], 6),
-            "p_value": "{:.6e}".format(linear_regression_model_fitted.pvalues[1]),
+            "t_score": round(Logistic_regression_model_fitted.tvalues[1], 6),
+            "p_value": "{:.6e}".format(Logistic_regression_model_fitted.pvalues[1]),
         }
+
     # print(results)
     return results
 
@@ -199,7 +211,7 @@ def Random_Forest_Variable_importance(dataset, response, pred):
     # print(f"sorted_imp_list - {sorted_imp_list}")
     results = {}
     for feature_name in sorted_imp_list.keys():
-        t_value, p_value = LogisticRegression(dataset, response, [feature_name])[
+        t_score, p_value = LogisticRegression(dataset, response, [feature_name])[
             feature_name
         ].values()
         msd_plot_var = (
@@ -212,7 +224,7 @@ def Random_Forest_Variable_importance(dataset, response, pred):
         )
         results[feature_name] = {
             "random forest importance": sorted_imp_list[feature_name],
-            "t-score": t_value,
+            "t-score": t_score,
             "p-value": p_value,
             "plot": plot_var,
             "msd plot": msd_plot_var,
@@ -415,13 +427,15 @@ def cat_cont_correlation(X, cont, cat):
         print("Correlation matrix is empty.")
 
 
-def brute_create_correlation_table(pred_list, table_title):
-    brute_table_data = [["plot_var_1", "plot_var_2", "plot"]]
+def brute_create_correlation_table(pred_list, msd_list, table_title):
+    brute_table_data = [["feature", "plot_var_1", "plot_var_2", "plot"]]
     for i in range(len(pred_list)):
         for j in range(len(pred_list)):
             if i < j:
                 variable_1 = pred_list[i]
                 variable_2 = pred_list[j]
+                feature = f"{variable_1} and {variable_2}"
+
                 plot_var_1 = (
                     f'<a target="_blank" rel="noopener noreferrer" href="./plots/'
                     f'{variable_1}-plot.html">Plot for {variable_1}</a>'
@@ -434,9 +448,11 @@ def brute_create_correlation_table(pred_list, table_title):
                     f'<a target="_blank" rel="noopener noreferrer" href="./bruteforce_plots/'
                     f'{variable_1}-{variable_2}-plot.html">View Plot</a>'
                 )
-                brute_table_data.append([plot_var_1, plot_var_2, plot])
+                brute_table_data.append([feature, plot_var_1, plot_var_2, plot])
 
     df = pd.DataFrame(brute_table_data[1:], columns=brute_table_data[0])
+    df = pd.merge(df, msd_list, left_on="feature", right_on="feature")
+    print(df.head())
     brute_html_table = df.to_html(render_links=True, escape=False)
     brute_html_table = f"<h2>{table_title}</h2>" + brute_html_table
     brute_html_table = (
@@ -449,6 +465,7 @@ def cat_cat_brute_force(df, cat_pred_list, response):
     # create a new DataFrame to store the binned values
     binned_df = df.copy()
 
+    msd = []
     # iterate over each pair of categorical predictors
     for i, cat_1 in enumerate(cat_pred_list):
         for j, cat_2 in enumerate(cat_pred_list):
@@ -475,7 +492,7 @@ def cat_cat_brute_force(df, cat_pred_list, response):
                     binned_df_grouped["unweighted_msd"].sum()
                     / binned_df_grouped["count"].sum()
                 )
-                print(unweighted_msd)
+                # print(unweighted_msd)
 
                 # calculate weighted mean square deviation
                 binned_df_grouped["weighted_count"] = binned_df_grouped["count"] / len(
@@ -485,7 +502,9 @@ def cat_cat_brute_force(df, cat_pred_list, response):
                     (binned_df_grouped["mean"] - pop_mean) ** 2
                 ) * binned_df_grouped["weighted_count"]
                 weighted_msd = binned_df_grouped["weighted_msd"].sum()
-                print(weighted_msd)
+                # print(weighted_msd)
+
+                msd.append([f"{cat_1} and {cat_2}", unweighted_msd, weighted_msd])
 
                 fig1 = go.Figure(
                     data=go.Heatmap(
@@ -511,8 +530,9 @@ def cat_cat_brute_force(df, cat_pred_list, response):
 
                 fig1.write_html(file=file_path, include_plotlyjs="cdn")
 
+    msd = pd.DataFrame(msd, columns=["feature", "unweighted_msd", "weighted_msd"])
     html = brute_create_correlation_table(
-        cat_pred_list, " Categorical/Categorical Brute_Force Table"
+        cat_pred_list, msd, " Categorical/Categorical Brute_Force Table"
     )
 
     with open("my_report.html", "a") as f:
@@ -523,6 +543,7 @@ def cont_cont_brute_force(df, cont_pred_list, response):
     # create a new DataFrame to store the binned values
     binned_df = df.copy()
 
+    msd = []
     # iterate over each pair of continuous predictors
     for i, cont_1 in enumerate(cont_pred_list):
         for j, cont_2 in enumerate(cont_pred_list):
@@ -551,7 +572,7 @@ def cont_cont_brute_force(df, cont_pred_list, response):
                 ) / 100
                 unweighted_msd = binned_df_grouped["unweighted_msd"].sum()
 
-                print(unweighted_msd)
+                # print(f"{cont_1} and {cont_2}",unweighted_msd)
 
                 # calculate weighted mean square deviation
                 binned_df_grouped["weighted_count"] = binned_df_grouped["count"] / len(
@@ -562,7 +583,9 @@ def cont_cont_brute_force(df, cont_pred_list, response):
                 ) * binned_df_grouped["weighted_count"]
                 weighted_msd = binned_df_grouped["weighted_msd"].sum()
 
-                print(weighted_msd)
+                # print(f"{cont_1} and {cont_2}",weighted_msd)
+
+                msd.append([f"{cont_1} and {cont_2}", unweighted_msd, weighted_msd])
 
                 fig = go.Figure(
                     data=go.Heatmap(
@@ -586,13 +609,9 @@ def cont_cont_brute_force(df, cont_pred_list, response):
                 file_path = f"bruteforce_plots/{cont_1}-{cont_2}-plot.html"
 
                 fig.write_html(file=file_path, include_plotlyjs="cdn")
-
-                # html = brute_create_correlation_table(
-                #     cont_pred_list, " Continuous/Continuous Brute_Force Table", unweighted_msd, weighted_msd
-                # )
-
+    msd = pd.DataFrame(msd, columns=["feature", "unweighted_msd", "weighted_msd"])
     html = brute_create_correlation_table(
-        cont_pred_list, " Continuous/Continuous Brute_Force Table"
+        cont_pred_list, msd, " Continuous/Continuous Brute_Force Table"
     )
 
     with open("my_report.html", "a") as f:
@@ -696,15 +715,72 @@ def cont_cat_brute_create_correlation_table(cont_pred_list, cat_pred_list, table
     return html_table
 
 
-def classifier(df, P_Predictors, R_Response):
-    # Reference From hw_01
-    x = df[P_Predictors]
-    y = df[R_Response]
-
-    X_train, X_test, Y_train, Y_test = train_test_split(
-        x, y, test_size=0.2, random_state=1
+def confusion_matrix_plot(y_test, y_predict, model):
+    confusionmatrix = confusion_matrix(y_test, y_predict)
+    x = ["0", "1"]
+    y = ["0", "1"]
+    fig = ff.create_annotated_heatmap(
+        z=confusionmatrix,
+        x=x,
+        y=y,
+        colorscale="rdbu",
+        annotation_text=confusionmatrix,
+        showscale=True,
     )
 
+    # add layout
+    fig.update_layout(
+        width=1000,
+        height=600,
+        xaxis_showgrid=False,
+        yaxis_showgrid=False,
+        template="none",
+        title={
+            "text": f"Confusion Matrix - {model}",
+            "y": 0.95,
+            "x": 0.5,
+            "xanchor": "center",
+            "yanchor": "top",
+        },
+        xaxis_title="Predicted ",
+        yaxis_title="Actual ",
+    )
+    # fig.show()
+    return fig
+
+
+def ROC(Y_test, predict, prob, model):
+    # Refernce : https://stackoverflow.com/questions/25009284/how-to-plot-roc-curve-in-python
+    roc = roc_auc_score(Y_test, predict)
+    fpr, tpr, threshold = roc_curve(Y_test, prob[:, 1])
+    fig = plt.figure()
+    plt.title(f"Receiver Operating Characteristic- {model}")
+    plt.plot(fpr, tpr, "b", label="AUC = %0.2f" % roc)
+    plt.legend(loc="lower right")
+    plt.plot([0, 1], [0, 1], "r--")
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.ylabel("True Positive Rate")
+    plt.xlabel("False Positive Rate")
+    # plt.show()
+    return fig
+
+
+def classifier(df, P_Predictors, R_Response):
+    # Reference: https://datascience.stackexchange.com/questions/49160/training-and-test-split-for-time-series-analysis
+    df = df.set_index(df["local_date"])
+    df = df.sort_index()
+    date_partition = datetime.datetime(2009, 8, 13)  # set split date to August 13, 2009
+
+    # Split data into training and test sets
+    df_train = df.loc[df["local_date"] <= date_partition]
+    df_test = df.loc[df["local_date"] > date_partition]
+    X_train = df_train.filter(items=P_Predictors)
+    X_test = df_test.filter(items=P_Predictors)
+    Y_train = df_train[R_Response]
+    Y_test = df_test[R_Response]
+
+    # Reference : Hw_01
     # Random Forest
     pipeline = Pipeline(
         [
@@ -714,8 +790,20 @@ def classifier(df, P_Predictors, R_Response):
     )
     pipeline.fit(X_train, Y_train)
     predict = pipeline.predict(X_test)
+    prob = pipeline.predict_proba(X_test)
     accuracy = np.mean(predict == Y_test)
     print("Random Forest Accuracy:", accuracy)
+    print(
+        "Random Forest Classification Report :\n",
+        classification_report(Y_test, predict),
+    )
+    # fig2 = ROC(Y_test, predict, prob, "Random Forest")
+    fig1 = confusion_matrix_plot(Y_test, predict, "Random Forest")
+    fig2 = ROC(Y_test, predict, prob, "Random Forest")
+    plotly_fig = mpl_to_plotly(fig2)
+    with open("my_report.html", "a") as f:
+        f.write(fig1.to_html(full_html=False, include_plotlyjs="cdn"))
+        f.write(plotly.io.to_html(plotly_fig, full_html=False, include_plotlyjs="cdn"))
 
     # DecisionTreeClassifier
     pipeline = Pipeline(
@@ -725,19 +813,70 @@ def classifier(df, P_Predictors, R_Response):
     predict = pipeline.predict(X_test)
     accuracy = np.mean(predict == Y_test)
     print("Decision Tree Accuracy:", accuracy)
-
+    print(
+        "Decision Tree Classification Report :\n",
+        classification_report(Y_test, predict),
+    )
+    fig1 = confusion_matrix_plot(Y_test, predict, "Decision Tree")
+    fig2 = ROC(Y_test, predict, prob, "Decision Tree")
+    plotly_fig = mpl_to_plotly(fig2)
+    with open("my_report.html", "a") as f:
+        f.write(fig1.to_html(full_html=False, include_plotlyjs="cdn"))
+        f.write(plotly.io.to_html(plotly_fig, full_html=False, include_plotlyjs="cdn"))
     # SVM
     pipeline = Pipeline([("scaler", StandardScaler()), ("classifier", SVC())])
     pipeline.fit(X_train, Y_train)
     predict = pipeline.predict(X_test)
     accuracy = np.mean(predict == Y_test)
     print("SVM Accuracy:", accuracy)
+    print("SVM Classification Report :\n", classification_report(Y_test, predict))
+    fig1 = confusion_matrix_plot(Y_test, predict, "SVM")
+    fig2 = ROC(Y_test, predict, prob, "SVM")
+    plotly_fig = mpl_to_plotly(fig2)
+    with open("my_report.html", "a") as f:
+        f.write(fig1.to_html(full_html=False, include_plotlyjs="cdn"))
+        f.write(plotly.io.to_html(plotly_fig, full_html=False, include_plotlyjs="cdn"))
+    # Naive Bayes
+    pipeline = Pipeline([("scaler", StandardScaler()), ("classifier", GaussianNB())])
+    pipeline.fit(X_train, Y_train)
+    predict = pipeline.predict(X_test)
+    accuracy = np.mean(predict == Y_test)
+    print("Naive Bayes Accuracy:", accuracy)
+    print(
+        "Naive Bayes Classification Report :\n", classification_report(Y_test, predict)
+    )
+    fig1 = confusion_matrix_plot(Y_test, predict, "Naive Bayes")
+    fig2 = ROC(Y_test, predict, prob, "Naive Bayes")
+    plotly_fig = mpl_to_plotly(fig2)
+    with open("my_report.html", "a") as f:
+        f.write(fig1.to_html(full_html=False, include_plotlyjs="cdn"))
+        f.write(plotly.io.to_html(plotly_fig, full_html=False, include_plotlyjs="cdn"))
+    # k-Nearest Neighbors
+    pipeline = Pipeline(
+        [("scaler", StandardScaler()), ("classifier", KNeighborsClassifier())]
+    )
+    pipeline.fit(X_train, Y_train)
+    predict = pipeline.predict(X_test)
+    accuracy = np.mean(predict == Y_test)
+    print("k-Nearest Neighbors Accuracy:", accuracy)
+    print(
+        "k-Nearest Neighbors Classification Report :\n",
+        classification_report(Y_test, predict),
+    )
+    fig1 = confusion_matrix_plot(Y_test, predict, "k-Nearest Neighbors")
+    fig2 = ROC(Y_test, predict, prob, "k-Nearest Neighbors")
+    plotly_fig = mpl_to_plotly(fig2)
+    with open("my_report.html", "a") as f:
+        f.write(fig1.to_html(full_html=False, include_plotlyjs="cdn"))
+        f.write(plotly.io.to_html(plotly_fig, full_html=False, include_plotlyjs="cdn"))
 
 
 def main():
     db_user = "root"
     db_pass = "newrootpassword"  # pragma: allowlist secret
     db_host = "localhost"
+    # db_host = "mariadb"
+    # port = 3306
     db_database = "baseball"
     connect_string = (
         f"mariadb+mariadbconnector://" f"{db_user}:{db_pass}@{db_host}/{db_database}"
@@ -749,23 +888,33 @@ def main():
     df = pandas.read_sql_query(query, sql_engine)
     # print(df.head())
     # print(df.dtypes)
-    null_values = df["HomeTeamWins"].isna()
-    null_count = df["HomeTeamWins"].isna().sum()
-
-    print(f"null_values = {null_values}")
-    print(f"null_count = {null_count}")
-
-    print(f"total_count = {len(df)}")
+    # null_values = df["HomeTeamWins"].isna()
+    # null_count = df["HomeTeamWins"].isna().sum()
+    #
+    # # print(f"null_values = {null_values}")
+    # # print(f"null_count = {null_count}")
+    # #
+    # # print(f"total_count = {len(df)}")
 
     df = df.dropna(subset=["HomeTeamWins"])
+
+    # Convert the local_date column to a datetime format
+    df["local_date"] = pd.to_datetime(df["local_date"], errors="coerce")
+    # print(df['local_date'][:5])
     df = df.fillna(df.median())
     # converting the response to int type from object
     df["HomeTeamWins"] = df["HomeTeamWins"].astype("int64")
     R_Response = "HomeTeamWins"
-    print(df.head())
-    print(df.dtypes)
+    # print(df.head())
+    # print(df.dtypes)
 
-    ignore_columns = ["game_id", "home_team_id", "away_team_id", "team_id"]
+    ignore_columns = [
+        "game_id",
+        "home_team_id",
+        "away_team_id",
+        "team_id",
+        "local_date",
+    ]
     P_Predictors = [
         x for x in df.columns if x != R_Response and x not in ignore_columns
     ]

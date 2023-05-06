@@ -5,7 +5,7 @@ SELECT tp.game_id
     , tp.team_id
     , g.home_team_id
     , g.away_team_id
-    , g.local_date
+    , DATE(g.local_date) AS local_date
     , tp.atBat AS tp_atBat
     , tp.Hit AS tp_Hit
     , tp.Strikeout
@@ -45,6 +45,7 @@ SELECT tt1.game_id
     , tt1.team_id
     , tt1.home_team_id
     , tt1.away_team_id
+    , tt1.local_date
     , COALESCE(SUM(tt2.atBat), 0) AS atBat
     , COALESCE(SUM(tt2.Hit), 0) AS Hit
     , COALESCE(SUM(tt2.tp_atBat), 0) AS tp_atBat
@@ -81,6 +82,7 @@ SELECT tf.game_id
     , tf.team_id
     , tf.away_team_id
     , tf.home_team_id
+    , tf.local_date
     , ROUND(tfh.Hit / NULLIF(tfh.atBat, 0) / NULLIF(tfa.Hit / NULLIF(tfa.atBat, 0), 0), 2) AS Batting_Average_Ratio
     , ROUND(tfh.Hit / NULLIF(tfh.tp_Strikeout, 0) / NULLIF(tfa.Hit / NULLIF(tfa.tp_Strikeout, 0), 0), 2) AS Hit_per_Strikeout_Ratio
     , ROUND(tfh.tp_Strikeout / NULLIF(tfh.tp_Walk, 0) / NULLIF(tfa.tp_Strikeout / NULLIF(tfa.tp_Walk, 0), 0), 2) AS Strikeout_to_walk_Ratio
@@ -96,7 +98,7 @@ FROM temp_feature_table_1 tf
 GROUP BY tf.game_id, tf.home_team_id, tf.away_team_id
 ;
 
-# SELECT  COUNT(*)   FROM feature_ratio_table;
+#  SELECT  COUNT(*)   FROM feature_ratio_table;
 #
 # SELECT  *   FROM feature_ratio_table
 # ;
