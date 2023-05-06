@@ -21,12 +21,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    #    ports:
-    #      -
     volumes:
-      - ./results:/app
+      - ./results:/app/out
     depends_on:
       - mariadb
-    command: ["/bin/bash", "./my_script.sh"]
+    command: ["bash", "my_script.sh"]
 volumes:
   db:
+  results:

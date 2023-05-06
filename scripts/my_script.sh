@@ -20,14 +20,14 @@ if ! mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD -e "use $DB_NAME"; then
   echo "Creating baseball database..."
   mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD -e "create database $DB_NAME;"
   echo "Loading baseball database with data..."
-  mysql -u $DB_USER -p$DB_PASSWORD -h $DB_HOST --database=$DB_NAME < /app/baseball.sql
+  mysql -u $DB_USER -p$DB_PASSWORD -h $DB_HOST --database=$DB_NAME < baseball.sql
 else
   echo "Baseball database already exists."
 fi
 
 # Import features
 echo "Importing features from /app/baseball_features.sql ..."
-mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME < /app/baseball_features.sql
+mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME < baseball_features.sql
 echo "Features imported successfully."
 
 # RUN python files

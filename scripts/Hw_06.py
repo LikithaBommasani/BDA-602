@@ -585,7 +585,12 @@ def cont_cont_brute_force(df, cont_pred_list, response):
 
                 # print(f"{cont_1} and {cont_2}",weighted_msd)
 
-                msd.append([f"{cont_1} and {cont_2}", unweighted_msd, weighted_msd])
+                correlation_matrix = df[cont_pred_list].corr(method="pearson").round(5)
+                corr_coef = correlation_matrix.loc[cont_1, cont_2]
+
+                msd.append(
+                    [f"{cont_1} and {cont_2}", unweighted_msd, weighted_msd, corr_coef]
+                )
 
                 fig = go.Figure(
                     data=go.Heatmap(
@@ -609,7 +614,9 @@ def cont_cont_brute_force(df, cont_pred_list, response):
                 file_path = f"bruteforce_plots/{cont_1}-{cont_2}-plot.html"
 
                 fig.write_html(file=file_path, include_plotlyjs="cdn")
-    msd = pd.DataFrame(msd, columns=["feature", "unweighted_msd", "weighted_msd"])
+    msd = pd.DataFrame(
+        msd, columns=["feature", "unweighted_msd", "weighted_msd", "pearson_corr"]
+    )
     html = brute_create_correlation_table(
         cont_pred_list, msd, " Continuous/Continuous Brute_Force Table"
     )
@@ -874,8 +881,8 @@ def classifier(df, P_Predictors, R_Response):
 def main():
     db_user = "root"
     db_pass = "newrootpassword"  # pragma: allowlist secret
-    db_host = "localhost"
-    # db_host = "mariadb"
+    # db_host = "localhost"
+    db_host = "mariadb:3306"
     # port = 3306
     db_database = "baseball"
     connect_string = (

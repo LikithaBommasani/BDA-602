@@ -23,7 +23,7 @@ RUN apt-get update \
      python3 \
      python3-pip \
      python3-dev \
-     libmariadb3 libmariadb-dev\
+     libmariadb3 libmariadb-dev mariadb-client\
   && rm -rf /var/lib/apt/lists/*
 
 
@@ -33,14 +33,14 @@ COPY requirements.txt .
 RUN pip3 install --compile --no-cache-dir -r requirements.txt
 
 ## Copy over code
-COPY baseball.sql /app
-COPY baseball_features.sql /app/baseball_features.sql
-COPY my_script.sh /app
-COPY Hw_06.py /app
-COPY msd_hw_06.py /app
-COPY correlation_hw_06.py /app
+COPY baseball.sql $APP_HOME
+COPY baseball_features.sql $APP_HOME
+COPY my_script.sh $APP_HOME
+COPY Hw_06.py $APP_HOME
+COPY msd_hw_06.py $APP_HOME
+COPY correlation_hw_06.py $APP_HOME
 
 
-RUN chmod +x ./my_script.sh
-#CMD["/bin/bash", "./my_script.sh"]
+#RUN chmod +x ./my_script.sh
+#CMD ["/bin/bash", "/my_script.sh"]
 
