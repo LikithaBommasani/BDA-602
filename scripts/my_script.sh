@@ -9,8 +9,8 @@ done
 echo "MariaDB is up and running!"
 
 # Define database credentials
-DB_HOST="localhost"
-#DB_HOST="mariadb"
+#DB_HOST="localhost"
+DB_HOST="mariadb"
 DB_USER="root"
 DB_PASSWORD="newrootpassword"  # pragma: allowlist secret
 DB_NAME="baseball"
@@ -33,5 +33,5 @@ echo "Features imported successfully."
 # RUN python files
 
 echo "run python"
-python scripts/*.py
+python Hw_06.py
 echo "Done Running python code !!!"
