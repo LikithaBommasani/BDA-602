@@ -66,12 +66,12 @@ To analyze the relationship between pairs of variables, I used a correlation mat
 
 ![all corr](https://github.com/LikithaBommasani/BDA-602/assets/112617127/f5440564-2c8e-403b-86f2-a107ab0bde45)
 
-#### Correlation aftre Dropping features with the correlation more than 0.90
+#### Correlation Matrix after Dropping features with the correlation more than 0.90
 
 ![80 cor](https://github.com/LikithaBommasani/BDA-602/assets/112617127/20509cca-dd10-47d9-a279-8feb6809746d)
 
 
-#### Correlation aftre Dropping features with the correlation more than 0.80
+#### Correlation Matrix after Dropping features with the correlation more than 0.80
 
 ![90 corr](https://github.com/LikithaBommasani/BDA-602/assets/112617127/e4640da6-6edb-4a02-8469-10e800855b5b)
 
