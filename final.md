@@ -1,5 +1,6 @@
 # BASEBALL DATA ANALYSIS
-![Mookie_Betts_hitting_the_ball_(36478781664)](https://github.com/LikithaBommasani/BDA-602/assets/112617127/3dc861ed-1546-4403-ad77-00620523827c)
+
+![Mookie_Betts_hitting_the_ball_(36478781664)](https://github.com/LikithaBommasani/BDA-602/assets/112617127/66580ab5-b10e-4c36-b05c-b2003739c685)
 
 ## Overview
 [Baseball](https://en.wikipedia.org/wiki/Baseball) has always been a sport that relies heavily on statistics, and with the emergence of machine learning, the possibilities for statistical analysis have expanded significantly. With its ability to analyse vast amounts of data generated during baseball games, machine learning is becoming an increasingly critical tool in the sport's analytics toolkit. By leveraging sophisticated algorithms and statistical models, machine learning can uncover complex patterns and relationships in player performance, team strategy, and game outcomes that may have been previously difficult to detect. This opens new possibilities for informed decision-making, enabling coaches and analysts to optimize player performance, develop winning strategies, and improve a team's chances of success. Machine learning also has the potential to automate many of the repetitive and time-consuming tasks involved in statistical analysis, allowing analysts to focus on more complex analyses and generate deeper insights.
