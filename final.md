@@ -51,8 +51,29 @@ Using the stats model’s package, I calculated the p-value and t-score for each
 ### Random Forest Importance
 I used random forest variable importance to rank the variables and determine their importance in predicting the response variable. This analysis helps identify which variables have the greatest impact on the accuracy of the model.
 
+
+![All random](https://github.com/LikithaBommasani/BDA-602/assets/112617127/c8d60983-473d-4806-a704-34957294a15b)
+
+![d ran](https://github.com/LikithaBommasani/BDA-602/assets/112617127/eafdc051-6f46-4b0a-8001-5c06fbf2c3b6)
+
+
+
 ### Correlation
 To analyze the relationship between pairs of variables, I used a correlation matrix with Pearson correlation coefficients. This method measures the linear relationship between two variables, with a coefficient that ranges from -1 to 1. A coefficient of 1 indicates a perfect positive correlation, while a coefficient of -1 indicates a perfect negative correlation. By examining the correlation matrix, I can identify which pairs of variables have the strongest relationships and potential interactions, providing insight into the underlying patterns in the data.
+
+#### Correlation Matrix before Dropping features
+
+
+![all corr](https://github.com/LikithaBommasani/BDA-602/assets/112617127/f5440564-2c8e-403b-86f2-a107ab0bde45)
+
+#### Correlation aftre Dropping features with the correlation more than 0.90
+
+![80 cor](https://github.com/LikithaBommasani/BDA-602/assets/112617127/20509cca-dd10-47d9-a279-8feb6809746d)
+
+
+#### Correlation aftre Dropping features with the correlation more than 0.80
+
+![90 corr](https://github.com/LikithaBommasani/BDA-602/assets/112617127/e4640da6-6edb-4a02-8469-10e800855b5b)
 
 
 ## Models
@@ -66,13 +87,57 @@ These models were chosen for their ability to handle various types of data and t
 The Training Data is set to Training data =< august 13, 2009
 The Test Data is set to Test data > august 13, 2009
 
+The accuracy and classification report of the models is as below:
+
+
+![RFa](https://github.com/LikithaBommasani/BDA-602/assets/112617127/cdf10fa9-e4db-4ea7-bfa0-cd38d2c2e498)
+
+
+![DTa](https://github.com/LikithaBommasani/BDA-602/assets/112617127/865821c2-d8c1-4615-93a2-906e0a01f3b0)
+
+
+![SVMa](https://github.com/LikithaBommasani/BDA-602/assets/112617127/dc0b28e7-933f-4fe7-8b19-1fa22b56c940)
+
+
+![NBa](https://github.com/LikithaBommasani/BDA-602/assets/112617127/8fbd12c4-103c-4f99-8c5f-a6256dd46028)
+
+
+![KNNa](https://github.com/LikithaBommasani/BDA-602/assets/112617127/6a52e645-6caf-4adc-9edd-a4f14f1a3664)
 
 
 
 
 
+### In order to evaluate the model I have used the confusion matrix and ROC :
 
 
 
 
+
+![RF](https://github.com/LikithaBommasani/BDA-602/assets/112617127/31af64a6-9bb5-472c-9534-08fc7906ca5c)
+
+
+![RF RC](https://github.com/LikithaBommasani/BDA-602/assets/112617127/c4836d50-66de-466b-b0b3-330414ccc215)
+
+
+![DT](https://github.com/LikithaBommasani/BDA-602/assets/112617127/561125b4-ef3a-4c26-b7cd-54ded34e30c7)
+
+![DT Rc](https://github.com/LikithaBommasani/BDA-602/assets/112617127/29b7bb9d-9af0-4224-a824-537fc6cb9b73)
+
+![SVM](https://github.com/LikithaBommasani/BDA-602/assets/112617127/e7df8b1b-a796-4cdc-b3a4-7152b95ae7e3)
+
+
+![SVM RC](https://github.com/LikithaBommasani/BDA-602/assets/112617127/41e75a5e-d4c3-4fa7-b4a5-fd52c3cfddbc)
+
+
+![NB](https://github.com/LikithaBommasani/BDA-602/assets/112617127/bdf3d01f-9250-4de7-a20d-6eb704172e44)
+
+
+![NB RC](https://github.com/LikithaBommasani/BDA-602/assets/112617127/e92984f7-c7a9-4821-93dd-c92c86ea89a9)
+
+
+![KNN](https://github.com/LikithaBommasani/BDA-602/assets/112617127/95cc03e5-287d-48ac-9934-f33d37eebf67)
+
+
+![KNN RC](https://github.com/LikithaBommasani/BDA-602/assets/112617127/be6df4a2-d259-465a-bb69-af0abfe4260a)
 
