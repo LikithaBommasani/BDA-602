@@ -76,6 +76,13 @@ To analyze the relationship between pairs of variables, I used a correlation mat
 ![90 corr](https://github.com/LikithaBommasani/BDA-602/assets/112617127/e4640da6-6edb-4a02-8469-10e800855b5b)
 
 
+### Brute Force :
+
+
+![BF](https://github.com/LikithaBommasani/BDA-602/assets/112617127/7a15d4de-6950-4ba2-b091-03dfcd87df45)
+
+
+
 ## Models
 To build machine learning models for prediction, I selected several different models, including. 
 #### •	Random Forest
@@ -140,4 +147,13 @@ The accuracy and classification report of the models is as below:
 
 
 ![KNN RC](https://github.com/LikithaBommasani/BDA-602/assets/112617127/be6df4a2-d259-465a-bb69-af0abfe4260a)
+
+
+## Conclusion :
+
+In this project, we used a baseball dataset to train machine learning models to predict the home_team_wins variable. The best accuracy achieved was around 54% with the SVM classifier. We also performed feature selection and analysis, which revealed that adding more meaningful features like  pitching statistical features could improve the model's accuracy.
+
+To further improve the accuracy of the model, we could consider using more advanced techniques like principal component analysis (PCA) to select relevant features. Additionally, we could explore other models and hyperparameter tuning to see if we can achieve better results.
+
+Overall, this project demonstrates the importance of feature selection and analysis in machine learning, as well as the need to continuously explore new techniques and models to improve performance. In the context of baseball, accurate predictions can provide valuable insights for teams and fans alike, and could ultimately lead to better outcomes on the field.
 
