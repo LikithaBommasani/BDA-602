@@ -151,7 +151,7 @@ The accuracy and classification report of the models is as below:
 
 ## Conclusion :
 
-In this project, we used a baseball dataset to train machine learning models to predict the home_team_wins variable. The best accuracy achieved was around 54% with the SVM classifier. We also performed feature selection and analysis, which revealed that adding more meaningful features like  pitching statistical features could improve the model's accuracy.
+In this project, I used a baseball dataset to train machine learning models to predict the home_team_wins variable. The best accuracy achieved was around 54% with the SVM classifier. We also performed feature selection and analysis, which revealed that adding more meaningful features like  pitching statistical features could improve the model's accuracy.
 
 To further improve the accuracy of the model, we could consider using more advanced techniques like principal component analysis (PCA) to select relevant features. Additionally, we could explore other models and hyperparameter tuning to see if we can achieve better results.
 
