@@ -2,7 +2,7 @@
 
 # Wait for MariaDB container to be ready
 echo "Waiting for MariaDB container to be ready..."
-while ! mysqladmin ping -h localhost -u root -pnewrootpassword --silent; do
+while ! mysqladmin ping -h mariadb -u root -pnewrootpassword --silent; do
     echo "MariaDB is unavailable - sleeping..."
     sleep 15
 done

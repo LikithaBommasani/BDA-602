@@ -22,9 +22,9 @@ GROUP BY game_id, team_id
 ;
 
 
-
-# SELECT  COUNT(*)   FROM temp_team_pitching_counts;
 #
+# SELECT  COUNT(*)   FROM temp_team_pitching_counts;
+# #
 # SELECT  *   FROM temp_team_pitching_counts;
 
 CREATE OR REPLACE TABLE temp_table AS
@@ -32,6 +32,13 @@ SELECT ttp.* #noqa
     , tb.Hit
     , tb.atBat
     , tb.Home_Run AS home_runs
+    , tb.Hit_By_Pitch
+    , tb.inning
+    , tb.plateApperance
+    , tb.Single
+    , tb.`Double`
+    , tb.Triple
+
 FROM temp_team_pitching_counts ttp
     JOIN team_batting_counts tb ON ttp.game_id = tb.game_id
 GROUP BY team_id, game_id
@@ -57,6 +64,10 @@ SELECT tt1.game_id
     , COALESCE(SUM(tt2.Walk), 0) AS tp_Walk
     , COALESCE(SUM(tt2.Ground_Out), 0) AS tp_Ground_Out
     , COALESCE(SUM(tt2.Fly_Out), 0) AS tp_Fly_Out
+    , COALESCE(SUM(tt2.Hit_By_Pitch), 0) AS Hit_By_Pitch
+    , COALESCE(SUM(tt2.inning), 0) AS inning
+    , COALESCE(SUM(tt2.plateApperance), 0) AS plateApperance
+    , COALESCE(SUM(tt2.Single + (2 * tt2.`Double`) + (3 * tt2.Triple) + (4 * tt2.home_runs)), 0) AS TB
     , tt1.HomeTeamWins
 FROM temp_table tt1
     JOIN temp_table tt2 ON tt2.team_id = tt1.team_id
@@ -66,13 +77,7 @@ GROUP BY tt1.game_id, tt1.team_id
 ORDER BY tt1.game_id, tt1.team_id
 ;
 
-# UPDATE temp_feature_table_1 tf
-# SET tf.HomeTeamWins
-#     =       CASE HomeTeamWins
-#                  WHEN 'H' THEN 1 #noqa
-#                  WHEN 'A' THEN 0 #noqa
-#             END #noqa
-# ;
+
 
 # SELECT  COUNT(*)   FROM temp_feature_table_1;
 #
@@ -93,6 +98,13 @@ SELECT tf.game_id
     , ROUND(tfh.tp_Strikeout / NULLIF(tfh.atBat, 0) / NULLIF(tfa.atBat / NULLIF(tfa.atBat, 0), 0), 2) AS Strikeout_per_atBat_Ratio
     , ROUND(tfh.home_runs / NULLIF(tfh.Hit, 0) / NULLIF(tfa.home_runs / NULLIF(tfa.Hit, 0), 0), 2) AS HR_H_Ratio
     , ROUND(tfh.atBat / NULLIF(tfh.home_runs, 0) / NULLIF(tfa.atBat / NULLIF(tfa.home_runs, 0), 0), 2) AS AB_HR_Ratio
+    , ROUND(tfh.Hit_By_Pitch / NULLIF(tfa.Hit_By_Pitch, 0), 2) AS Hit_By_Pitch_Ratio
+    , ROUND(tfh.inning / NULLIF(tfa.inning, 0), 2) AS inning_Ratio
+    , ROUND(tfh.TB / NULLIF(tfa.TB, 0), 2) AS TB_Ratio
+    , ROUND(tfh.home_runs / NULLIF(tfh.inning, 0) / NULLIF(tfa.home_runs / NULLIF(tfa.inning, 0), 0), 2) AS HR_inning_Ratio
+    , ROUND(tfh.tp_Strikeout / NULLIF(tfh.inning, 0) / NULLIF(tfa.tp_Strikeout / NULLIF(tfa.inning, 0), 0), 2) AS Strikeout_inning_Ratio
+    , ROUND(tfh.tp_Strikeout / NULLIF(tfa.tp_Strikeout, 0), 2) AS Strikeout_Ratio
+    , ROUND(tfh.plateApperance / NULLIF(tfh.tp_Strikeout, 0) / NULLIF(tfa.plateApperance / NULLIF(tfa.tp_Strikeout, 0), 0), 2) AS plateApperance_Strikeout_Ratio
     , tf.HomeTeamWins
 FROM temp_feature_table_1 tf
     JOIN temp_feature_table_1 tfh ON tf.game_id = tfh.game_id AND tf.home_team_id = tfh.team_id

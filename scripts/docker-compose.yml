@@ -1,0 +1,31 @@
+#Reference : https://registry.hub.docker.com/r/linuxserver/mariadb
+
+version: "2.1"
+services:
+  mariadb:
+    image: lscr.io/linuxserver/mariadb:latest
+    container_name: mariadb
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      - MYSQL_ROOT_PASSWORD=newrootpassword # pragma: allowlist secret
+      - MYSQL_DATABASE=baseball
+    volumes:
+      - ./db:/config
+    ports:
+      - 8080:3306
+    restart: unless-stopped
+  python_sql_service:
+    container_name: python_sql
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./results:/app
+    depends_on:
+      - mariadb
+    command: ["bash", "my_script.sh"]
+volumes:
+  db:
+  results:

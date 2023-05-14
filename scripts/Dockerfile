@@ -28,19 +28,18 @@ RUN apt-get update \
 
 
 # Get necessary python libraries
-COPY ../../../Desktop/requirements.txt .
+COPY requirements.txt .
 
 RUN pip3 install --compile --no-cache-dir -r requirements.txt
 
 ## Copy over code
 COPY baseball.sql $APP_HOME
 COPY baseball_features.sql $APP_HOME
-COPY ../../../Desktop/my_script.sh $APP_HOME
+COPY my_script.sh $APP_HOME
 COPY Hw_06.py $APP_HOME
-COPY ../../../Desktop/msd_hw_06.py $APP_HOME
-COPY ../../../Desktop/correlation_hw_06.py $APP_HOME
+COPY msd_hw_06.py $APP_HOME
+COPY correlation_hw_06.py $APP_HOME
 
 
 #RUN chmod +x ./my_script.sh
 #CMD ["/bin/bash", "/my_script.sh"]
-

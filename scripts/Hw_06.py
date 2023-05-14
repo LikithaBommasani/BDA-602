@@ -881,8 +881,8 @@ def classifier(df, P_Predictors, R_Response):
 def main():
     db_user = "root"
     db_pass = "newrootpassword"  # pragma: allowlist secret
-    db_host = "localhost"
-    # db_host = "mariadb:3306"
+    # db_host = "localhost"
+    db_host = "mariadb:3306"
     # port = 3306
     db_database = "baseball"
     connect_string = (
@@ -921,6 +921,9 @@ def main():
         "away_team_id",
         "team_id",
         "local_date",
+        "plateApperance_Strikeout_Ratio",
+        "HR_inning_Ratio",
+        "inning_Ratio",
     ]
     P_Predictors = [
         x for x in df.columns if x != R_Response and x not in ignore_columns
