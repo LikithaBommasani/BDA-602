@@ -1,1 +1,16 @@
 numpy
+black == 22.12.0
+flask
+isort == 5.12.0
+mariadb
+netcal
+nose
+pandas
+pip-tools
+pre-commit
+plotly
+pyspark
+scikit-learn
+seaborn
+statsmodels
+sqlalchemy == 2.0.0
